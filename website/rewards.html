@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TOPCIT Quest • Rewards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="rewards.css" />
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand">
+                <div class="logo">🔥</div>
+                <div class="titles">
+                    <h1>TOPCIT Quest</h1>
+                    <p class="subtitle">Master IT through daily practice and rewards</p>
+                </div>
+            </div>
+            <nav class="main-nav" aria-label="Primary">
+                <a class="tab" href="index.html" title="Dashboard">📊 <span>Dashboard</span></a>
+                <a class="tab" href="learn.html" title="Learn">📘 <span>Learn</span></a>
+                <a class="tab" href="resources.html" title="Resources">🧰 <span>Resources</span></a>
+                <a class="tab" href="leaderboards.html" title="Leaderboards">🏆 <span>Leaderboards</span></a>
+                <a class="tab active" href="rewards.html" title="Rewards">🎁 <span>Rewards</span></a>
+                <a class="tab" href="community.html" title="Community">👥 <span>Community</span></a>
+            </nav>
+            <nav class="header-controls" aria-label="User controls">
+                <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim">🔥</span><span class="streak-num">7</span><span>day streak</span></div>
+                <button class="icon-btn" id="notify-btn" aria-label="Notifications">🔔<span class="dot-badge" aria-hidden="true"></span></button>
+                <div class="wallet chip" title="Your coins"><span class="coin-icon">🪙</span><span class="amount" data-wallet-amount>1,260</span></div>
+                <div class="user-menu">
+                    <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false">
+                        <span class="avatar">👩‍💻</span>
+                    </button>
+                    <div class="menu" id="user-dropdown" role="menu" aria-hidden="true">
+                        <button class="menu-item" role="menuitem">Profile</button>
+                        <button class="menu-item" role="menuitem">Settings</button>
+                        <button class="menu-item danger" role="menuitem" id="logout-btn">Log out</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card rewards-card">
+            <div class="card-head">
+                <h3>Rewards Store</h3>
+                <span class="chip subtle">Redeem your coins</span>
+            </div>
+            <div class="rewards-grid">
+                <div class="reward-item">
+                    <div class="reward-icon">💻</div>
+                    <div class="reward-details">
+                        <h4>HackerRank 1-Month Premium</h4>
+                        <p>Access to premium coding challenges and assessments</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 500</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="500">Redeem</button>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">🧩</div>
+                    <div class="reward-details">
+                        <h4>LeetCode 1-Month Premium</h4>
+                        <p>Unlimited access to problems, solutions, and mock interviews</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 450</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="450">Redeem</button>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">📜</div>
+                    <div class="reward-details">
+                        <h4>TOPCIT Certification Voucher</h4>
+                        <p>Official TOPCIT exam voucher with 20% discount</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 800</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="800">Redeem</button>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">📚</div>
+                    <div class="reward-details">
+                        <h4>TOPCIT Study Guide Bundle</h4>
+                        <p>Complete PDF guides for all TOPCIT domains</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 300</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="300">Redeem</button>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">🎓</div>
+                    <div class="reward-details">
+                        <h4>Online TOPCIT Prep Course</h4>
+                        <p>1-month access to video lectures and practice tests</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 600</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="600">Redeem</button>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">🏆</div>
+                    <div class="reward-details">
+                        <h4>Custom Avatar Pack</h4>
+                        <p>Exclusive TOPCIT-themed avatars and badges</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 250</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="250">Redeem</button>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">🔥</div>
+                    <div class="reward-details">
+                        <h4>Streak Bonus Multiplier</h4>
+                        <p>2x XP for 7-day streak maintenance</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 400</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="400">Redeem</button>
+                </div>
+                <div class="reward-item">
+                    <div class="reward-icon">📊</div>
+                    <div class="reward-details">
+                        <h4>Progress Analytics Report</h4>
+                        <p>Detailed performance insights and recommendations</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 350</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="350">Redeem</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <div>© 2025 TOPCIT Quest • Study smart, every day</div>
+    </footer>
+    <div class="toast-container" id="toast-container"></div>
+</body>
+</html>
+
+

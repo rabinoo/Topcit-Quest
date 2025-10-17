@@ -1,0 +1,121 @@
+@import url('style.css');
+
+/* Rewards specific styles */
+.rewards-card {
+    max-width: 100%;
+}
+
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.reward-item {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reward-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.reward-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.reward-details {
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.reward-details h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.reward-details p {
+    font-size: 0.9rem;
+    color: #666;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+}
+
+.reward-cost {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    color: #007bff;
+    font-size: 1rem;
+}
+
+.reward-cost .coin {
+    margin-right: 0.25rem;
+    font-size: 1.1rem;
+}
+
+.redeem-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.redeem-btn:hover {
+    background: linear-gradient(135deg, #0056b3, #004085);
+}
+
+.redeem-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .rewards-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .reward-item {
+        padding: 1rem;
+    }
+
+    .reward-icon {
+        font-size: 2.5rem;
+    }
+
+    .reward-details h4 {
+        font-size: 1rem;
+    }
+
+    .reward-details p {
+        font-size: 0.85rem;
+    }
+
+    .reward-cost {
+        font-size: 0.9rem;
+    }
+
+    .redeem-btn {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+}
