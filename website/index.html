@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TOPCIT Quest</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand">
+                <div class="logo">🔥</div>
+                <div class="titles">
+                    <h1>TOPCIT Quest</h1>
+                    <p class="subtitle">Master IT through daily practice and rewards</p>
+                </div>
+            </div>
+            <nav class="main-nav" aria-label="Primary">
+                <a class="tab active" href="index.html" title="Dashboard">📊 <span>Dashboard</span></a>
+                <a class="tab" href="learn.html" title="Learn">📘 <span>Learn</span></a>
+                <a class="tab" href="resources.html" title="Resources">🧰 <span>Resources</span></a>
+                <a class="tab" href="community.html" title="Community">👥 <span>Community</span></a>
+            </nav>
+            <nav class="header-controls" aria-label="User controls">
+                <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim">🔥</span><span class="streak-num">7</span><span>day streak</span></div>
+                <button class="icon-btn" id="notify-btn" aria-label="Notifications">🔔<span class="dot-badge" aria-hidden="true"></span></button>
+                <div class="wallet chip" title="Your coins"><span class="coin-icon">🪙</span><span class="amount" data-wallet-amount>1,260</span></div>
+                <div class="user-menu">
+                    <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false">
+                        <span class="avatar">👩‍💻</span>
+                    </button>
+                    <div class="menu" id="user-dropdown" role="menu" aria-hidden="true">
+                        <button class="menu-item" role="menuitem">Profile</button>
+                        <button class="menu-item" role="menuitem">Settings</button>
+                        <button class="menu-item danger" role="menuitem" id="logout-btn">Log out</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        
+    </header>
+
+    <main class="container">
+        <!-- Streak moved into header -->
+
+		<!-- TOPCIT Topics -->
+		<section class="card topics-card">
+			<div class="card-head">
+				<h3>TOPCIT Topics</h3>
+				<span class="chip subtle">Learn by domains</span>
+			</div>
+			<div class="topics-grid">
+				<div class="topic" data-topic>
+					<div class="ring" title="Programming Progress">
+						<svg viewBox="0 0 120 120" width="80" height="80" aria-hidden="true">
+							<defs>
+								<linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+									<stop offset="0%" stop-color="#007BFF"/>
+									<stop offset="100%" stop-color="#F4A261"/>
+								</linearGradient>
+							</defs>
+							<circle class="bg" cx="60" cy="60" r="52" />
+							<circle class="fg" cx="60" cy="60" r="52" data-ring data-progress="68" />
+						</svg>
+						<div class="ring-label">68%</div>
+					</div>
+					<div class="topic-body">
+						<div class="topic-title"><span class="icon-badge">💻</span> Programming</div>
+						<div class="topic-desc">OOP Concepts, Algorithms, Data Structures</div>
+						<div class="topic-actions">
+							<button class="btn small primary" data-action="continue">Continue</button>
+						</div>
+					</div>
+				</div>
+				<div class="topic" data-topic>
+					<div class="ring" title="Databases Progress">
+						<svg viewBox="0 0 120 120" width="80" height="80" aria-hidden="true">
+							<defs>
+								<linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+									<stop offset="0%" stop-color="#007BFF"/>
+									<stop offset="100%" stop-color="#F4A261"/>
+								</linearGradient>
+							</defs>
+							<circle class="bg" cx="60" cy="60" r="52" />
+							<circle class="fg" cx="60" cy="60" r="52" data-ring data-progress="42" />
+						</svg>
+						<div class="ring-label">42%</div>
+					</div>
+					<div class="topic-body">
+						<div class="topic-title"><span class="icon-badge">🗄️</span> Databases</div>
+						<div class="topic-desc">SQL Queries, Normalization, Indexing</div>
+						<div class="topic-actions">
+							<button class="btn small primary" data-action="start">Start</button>
+						</div>
+					</div>
+				</div>
+				<div class="topic" data-topic>
+					<div class="ring" title="Software Design Progress">
+						<svg viewBox="0 0 120 120" width="80" height="80" aria-hidden="true">
+							<defs>
+								<linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+									<stop offset="0%" stop-color="#007BFF"/>
+									<stop offset="100%" stop-color="#F4A261"/>
+								</linearGradient>
+							</defs>
+							<circle class="bg" cx="60" cy="60" r="52" />
+							<circle class="fg" cx="60" cy="60" r="52" data-ring data-progress="55" />
+						</svg>
+						<div class="ring-label">55%</div>
+					</div>
+					<div class="topic-body">
+						<div class="topic-title"><span class="icon-badge">🧩</span> Software Design</div>
+						<div class="topic-desc">System Analysis, UML, Design Patterns</div>
+						<div class="topic-actions">
+							<button class="btn small primary" data-action="continue">Continue</button>
+						</div>
+					</div>
+				</div>
+				<div class="topic" data-topic>
+					<div class="ring" title="IT Business Fundamentals Progress">
+						<svg viewBox="0 0 120 120" width="80" height="80" aria-hidden="true">
+							<defs>
+								<linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+									<stop offset="0%" stop-color="#007BFF"/>
+									<stop offset="100%" stop-color="#F4A261"/>
+								</linearGradient>
+							</defs>
+							<circle class="bg" cx="60" cy="60" r="52" />
+							<circle class="fg" cx="60" cy="60" r="52" data-ring data-progress="24" />
+						</svg>
+						<div class="ring-label">24%</div>
+					</div>
+					<div class="topic-body">
+						<div class="topic-title"><span class="icon-badge">💼</span> IT Business</div>
+						<div class="topic-desc">IT Strategy, Project, Economics</div>
+						<div class="topic-actions">
+							<button class="btn small primary" data-action="start">Start</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+        <div class="grid two">
+            <!-- XP & Level System -->
+			<section class="card xp-card">
+                <div class="card-head">
+					<h3>XP & Level</h3>
+					<div class="xp-stats">
+						<div class="user">
+							<div class="avatar">👩‍💻</div>
+							<div class="who">
+								<div class="name">Alex Kim</div>
+								<div class="muted">BSIT Student</div>
+							</div>
+						</div>
+						<span class="chip blue"><span data-xp-total>1,450</span> XP</span>
+						<span class="chip orange">Level: <span data-current-level>Debugger</span></span>
+					</div>
+                </div>
+                <p class="level-path">Novice → Coder → <strong data-current-level>Debugger</strong> → System Architect → TOPCIT Master</p>
+                <div class="progress" data-xp-progress>
+                    <div class="progress-bar" style="width: 62%" data-progress-bar>
+                        <span class="progress-glow"></span>
+                    </div>
+                </div>
+				<div class="milestones">
+					<span>Novice</span>
+					<span>Coder</span>
+					<span>Debugger</span>
+					<span>System Architect</span>
+					<span>TOPCIT Master</span>
+				</div>
+                <p class="progress-hint"><span data-gained-xp>+120</span> XP today • Keep going to reach <span data-next-level>System Architect</span></p>
+            </section>
+
+            <!-- Achievement Badges -->
+			<section class="card badges-card">
+                <div class="card-head">
+                    <h3>Achievement Badges</h3>
+                    <button class="btn tiny ghost">View all</button>
+                </div>
+                <div class="badges">
+					<div class="badge gold" title="First Quiz Completed" data-tip="Complete your first quiz to earn this!">
+                        <div class="shine"></div>
+                        <div class="icon">✅</div>
+                        <div class="label">First Quiz Completed</div>
+                    </div>
+					<div class="badge orange" title="5-Day Streak Hero" data-tip="Study for 5 days in a row.">
+                        <div class="shine"></div>
+                        <div class="icon">🔥</div>
+                        <div class="label">5-Day Streak Hero</div>
+                    </div>
+					<div class="badge blue" title="Database Domain Conqueror" data-tip="Score 80%+ in Database quizzes.">
+                        <div class="shine"></div>
+                        <div class="icon">🗄️</div>
+                        <div class="label">Database Domain Conqueror</div>
+                    </div>
+					<div class="badge purple" title="Accuracy 90%+" data-tip="Maintain 90% overall accuracy for a week.">
+                        <div class="shine"></div>
+                        <div class="icon">🎯</div>
+                        <div class="label">Accuracy 90%+</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+		<div class="grid two">
+            <!-- Weekly Progress Dashboard -->
+            <section class="card analytics-card">
+                <div class="card-head">
+                    <h3>Weekly Progress</h3>
+                    <span class="chip subtle">Keep your streak!</span>
+                </div>
+                <div class="charts">
+                    <div class="chart" data-chart-hours>
+                        <div class="chart-title">Study Hours</div>
+                        <div class="bars">
+                            <div class="bar" style="--h:40%" title="Mon"></div>
+                            <div class="bar" style="--h:70%" title="Tue"></div>
+                            <div class="bar" style="--h:55%" title="Wed"></div>
+                            <div class="bar" style="--h:80%" title="Thu"></div>
+                            <div class="bar" style="--h:65%" title="Fri"></div>
+                            <div class="bar" style="--h:30%" title="Sat"></div>
+                            <div class="bar" style="--h:50%" title="Sun"></div>
+                        </div>
+                        <div class="x-labels">
+                            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        </div>
+                    </div>
+					<div class="chart" data-chart-accuracy>
+                        <div class="chart-title">Accuracy by Topic</div>
+                        <div class="lines">
+                            <div class="line programming" style="--p1:35%; --p2:60%; --p3:75%; --p4:85%; --p5:80%; --p6:70%; --p7:90%"></div>
+                            <div class="line databases" style="--p1:20%; --p2:40%; --p3:55%; --p4:60%; --p5:70%; --p6:75%; --p7:78%"></div>
+							<div class="line design" style="--p1:25%; --p2:45%; --p3:58%; --p4:66%; --p5:72%; --p6:78%; --p7:83%"></div>
+							<div class="line business" style="--p1:30%; --p2:35%; --p3:45%; --p4:55%; --p5:62%; --p6:68%; --p7:74%"></div>
+                        </div>
+                        <div class="legend">
+                            <span class="dot programming"></span> Programming
+                            <span class="dot databases"></span> Databases
+							<span class="dot design"></span> Software Design
+                            <span class="dot business"></span> IT Business
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+			<!-- Reward Store & Leaderboard -->
+            <section class="card store-leaderboard-card">
+                <div class="card-head">
+                    <h3>Rewards & Leaderboard</h3>
+                </div>
+                <div class="split">
+                    <div class="store">
+                        <div class="section-title">Reward Store</div>
+                        <div class="store-items">
+                            <div class="store-item" data-redeem data-cost="250">
+                                <div class="avatar">🐱</div>
+                                <div class="meta">
+                                    <div class="name">Cat Avatar</div>
+                                    <div class="cost"><span class="coin">🪙</span> 250</div>
+                                </div>
+                                <button class="btn small">Redeem</button>
+                            </div>
+                            <div class="store-item" data-redeem data-cost="400">
+                                <div class="avatar">🌌</div>
+                                <div class="meta">
+                                    <div class="name">Galaxy Theme</div>
+                                    <div class="cost"><span class="coin">🪙</span> 400</div>
+                                </div>
+                                <button class="btn small">Redeem</button>
+                            </div>
+                            <div class="store-item" data-redeem data-cost="500">
+                                <div class="avatar">🧠</div>
+                                <div class="meta">
+                                    <div class="name">Bonus Quiz Pack</div>
+                                    <div class="cost"><span class="coin">🪙</span> 500</div>
+                                </div>
+                                <button class="btn small">Redeem</button>
+                            </div>
+                        </div>
+                    </div>
+					<div class="leaderboard">
+                        <div class="section-title">Leaderboard</div>
+                        <ol class="board">
+                            <li class="top1"><span class="rank">1</span><span class="medal">🥇</span><span class="pic">🦊</span><span class="user">Aarav</span><span class="score">2,340 XP</span></li>
+                            <li class="top2"><span class="rank">2</span><span class="medal">🥈</span><span class="pic">🐼</span><span class="user">Mina</span><span class="score">2,120 XP</span></li>
+                            <li class="top3"><span class="rank">3</span><span class="medal">🥉</span><span class="pic">🦁</span><span class="user">Jae</span><span class="score">1,980 XP</span></li>
+                            <li><span class="rank">4</span><span class="pic">🐨</span><span class="user">Linh</span><span class="score">1,760 XP</span></li>
+                            <li><span class="rank">5</span><span class="pic">🐧</span><span class="user">Noah</span><span class="score">1,620 XP</span></li>
+                            <li><span class="rank">6</span><span class="pic">🦄</span><span class="user">Sara</span><span class="score">1,510 XP</span></li>
+                            <li><span class="rank">7</span><span class="pic">🐯</span><span class="user">Dae</span><span class="score">1,390 XP</span></li>
+                            <li><span class="rank">8</span><span class="pic">🐸</span><span class="user">Nikhil</span><span class="score">1,280 XP</span></li>
+                            <li><span class="rank">9</span><span class="pic">🦔</span><span class="user">Emma</span><span class="score">1,150 XP</span></li>
+                            <li><span class="rank">10</span><span class="pic">🦉</span><span class="user">Yuna</span><span class="score">1,030 XP</span></li>
+                        </ol>
+                </div>
+            </section>
+        </div>
+
+		<!-- Learning Materials (separate card) -->
+		<section class="card materials-card">
+			<div class="card-head">
+				<h3>Learning Materials</h3>
+				<span class="chip subtle">Quick access</span>
+			</div>
+			<div class="materials">
+				<div class="materials-group">
+					<div class="group-title">Programming</div>
+					<ul class="materials-list">
+						<li><span class="icon">📘</span><a href="#">OOP Cheatsheet</a><span class="meta">PDF</span></li>
+						<li><span class="icon">🧪</span><a href="#">Algorithm Challenges</a><span class="meta">Interactive</span></li>
+					</ul>
+				</div>
+				<div class="materials-group">
+					<div class="group-title">Databases</div>
+					<ul class="materials-list">
+						<li><span class="icon">🗄️</span><a href="#">SQL Practice Set</a><span class="meta">Interactive</span></li>
+						<li><span class="icon">🧾</span><a href="#">Normalization Guide</a><span class="meta">Article</span></li>
+					</ul>
+				</div>
+				<div class="materials-group">
+					<div class="group-title">Software Design</div>
+					<ul class="materials-list">
+						<li><span class="icon">🧩</span><a href="#">UML Diagram Guide</a><span class="meta">Article</span></li>
+						<li><span class="icon">🏗️</span><a href="#">Design Patterns Cheatsheet</a><span class="meta">PDF</span></li>
+					</ul>
+				</div>
+				<div class="materials-group">
+					<div class="group-title">IT Business</div>
+					<ul class="materials-list">
+						<li><span class="icon">💼</span><a href="#">Sample Case Study</a><span class="meta">PDF</span></li>
+						<li><span class="icon">📊</span><a href="#">IT Strategy Basics</a><span class="meta">Article</span></li>
+					</ul>
+				</div>
+			</div>
+		</section>
+    </main>
+
+    <footer class="app-footer">
+        <div>© 2025 TOPCIT Quest • Study smart, every day</div>
+    </footer>
+    <div class="toast-container" id="toast-container"></div>
+</body>
+</html>
+
+
