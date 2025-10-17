@@ -99,10 +99,33 @@
   }
 
   // Wallet / redeem
+  const WALLET_KEY = 'topcit_wallet_amount';
   function getWallet(){ return parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0; }
-  function setWallet(value){ if(walletAmountEl){ walletAmountEl.textContent = value.toLocaleString(); } }
+  function setWallet(value){
+    const safe = Math.max(0, parseInt(value,10) || 0);
+    if(walletAmountEl){ walletAmountEl.textContent = safe.toLocaleString(); }
+    try{ localStorage.setItem(WALLET_KEY, String(safe)); }catch(_){}
+  }
+  function loadWallet(){
+    const domDefault = parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0;
+    const raw = localStorage.getItem(WALLET_KEY);
+    const stored = raw ? parseInt(raw,10) : NaN;
+    const value = Number.isFinite(stored) ? stored : domDefault;
+    if(!Number.isFinite(stored)){
+      try{ localStorage.setItem(WALLET_KEY, String(domDefault)); }catch(_){}
+    }
+    setWallet(value);
+  }
+  window.addEventListener('storage', (e)=>{
+    if(e.key === WALLET_KEY){
+      const next = parseInt(e.newValue || '0',10) || 0;
+      setWallet(next);
+      filterAffordableStoreItems();
+      limitDashboardStoreItems();
+    }
+  });
 
-  // Filter store items on dashboard by affordability (disable instead of hide)
+  // Filter store items on dashboard by affordability (show only affordable items)
   function filterAffordableStoreItems(){
     const have = getWallet();
     redeemables.forEach(el=>{
@@ -110,24 +133,24 @@
       if(!inDashboardStore) return; // Rewards page remains unaffected
       const cost = parseInt(el.getAttribute('data-cost') || '0', 10);
       const btn = el.querySelector('button');
-      if(!btn) return;
-      if(have >= cost){
-        el.classList.remove('locked');
-        btn.disabled = false;
-      }else{
-        el.classList.add('locked');
-        btn.disabled = true;
-      }
+      const affordable = have >= cost;
+      el.classList.toggle('locked', !affordable);
+      if(btn) btn.disabled = !affordable;
+      el.style.display = affordable ? '' : 'none';
     });
   }
 
-  // Limit dashboard store to showing only the first 5 items
-  function limitDashboardStoreItems(maxCount = 5){
+  // Limit dashboard store to showing only the first 5 visible (affordable) items
+  // Accepts either a number (desired max) or an event object.
+  function limitDashboardStoreItems(arg){
+    const maxCount = (typeof arg === 'number' && Number.isFinite(arg)) ? arg : 5;
     const container = document.querySelector('.store-items');
     if(!container) return;
     const items = Array.from(container.querySelectorAll('.store-item'));
     let shown = 0;
     items.forEach(item=>{
+      // Skip items hidden by affordability filter
+      if(item.style.display === 'none') return;
       if(shown < maxCount){
         item.style.display = '';
         shown++;
@@ -184,10 +207,11 @@
   });
 
   // Initial
+  window.addEventListener('load', loadWallet);
   window.addEventListener('load', revealCharts);
   window.addEventListener('load', animateRings);
   window.addEventListener('load', filterAffordableStoreItems);
-  window.addEventListener('load', limitDashboardStoreItems);
+  window.addEventListener('load', () => limitDashboardStoreItems());
 })();
 
 

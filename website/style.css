@@ -37,9 +37,10 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .app-header .header-top{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
 .app-header .brand{flex:1}
 .main-nav{display:flex;gap:8px;margin:0 16px;position:absolute;left:50%;transform:translateX(-50%)}
-.main-nav .tab{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);backdrop-filter:saturate(160%) blur(8px);font-weight:700}
-.main-nav .tab:hover{background:rgba(255,255,255,.2)}
-.main-nav .tab.active{background:#fff;color:#0f172a;border-color:#fff}
+.main-nav .tab{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.35);background:linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.10));backdrop-filter:saturate(160%) blur(8px);font-weight:700;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 6px 16px rgba(2,8,23,.28)}
+.main-nav .tab:hover{background:linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.12));transform:translateY(-1px);border-color:rgba(255,255,255,.55)}
+.main-nav .tab.active{background:#fff;color:#0b1220;border-color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.25)}
+.main-nav .tab:focus-visible{outline:2px solid rgba(255,255,255,.75);outline-offset:2px}
 .header-controls{display:flex;align-items:center;gap:18px;margin-left:auto}
 /* Uniform control sizes in header */
 .header-controls{--control-h:36px}
