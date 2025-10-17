@@ -119,3 +119,12 @@
         font-size: 0.9rem;
     }
 }
+
+@media (prefers-color-scheme: dark) {
+  .reward-item{background:var(--card); border:1px solid rgba(148,163,184,.18); box-shadow:0 2px 8px rgba(0,0,0,.45)}
+  .reward-details h4{color:var(--text)}
+  .reward-details p{color:var(--muted)}
+  .reward-cost{color:#60a5fa}
+  .redeem-btn{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
+  .redeem-btn:hover{background:linear-gradient(135deg,#1e40af,#1d4ed8)}
+}

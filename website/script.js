@@ -102,6 +102,15 @@
   function getWallet(){ return parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0; }
   function setWallet(value){ if(walletAmountEl){ walletAmountEl.textContent = value.toLocaleString(); } }
 
+  // Filter store items on dashboard by affordability
+  function filterAffordableStoreItems(){
+    const have = getWallet();
+    redeemables.forEach(el=>{
+      const cost = parseInt(el.getAttribute('data-cost') || '0', 10);
+      el.style.display = have >= cost ? '' : 'none';
+    });
+  }
+
   function handleRedeem(el){
     const cost = parseInt(el.getAttribute('data-cost') || '0', 10);
     const have = getWallet();
@@ -110,6 +119,8 @@
       return;
     }
     setWallet(have - cost);
+    // Re-filter store items after wallet changes
+    filterAffordableStoreItems();
     el.classList.add('redeemed');
     const btn = el.querySelector('button');
     if(btn){ btn.disabled = true; btn.textContent = 'Redeemed'; }
@@ -148,6 +159,7 @@
   // Initial
   window.addEventListener('load', revealCharts);
   window.addEventListener('load', animateRings);
+  window.addEventListener('load', filterAffordableStoreItems);
 })();
 
 

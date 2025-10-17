@@ -254,3 +254,14 @@
         text-align: left;
     }
 }
+
+@media (prefers-color-scheme: dark) {
+  .leaderboard-top1 .top-player{background:linear-gradient(135deg, rgba(250,204,21,.18), rgba(2,8,23,.60)); box-shadow:0 4px 12px rgba(0,0,0,.45)}
+  .leaderboard-top1 .rank, .leaderboard-top1 .user{color:var(--text)}
+  .leaderboard-top25 .top-player{background:rgba(2,8,23,.60); box-shadow:0 2px 8px rgba(0,0,0,.45)}
+  .leaderboard-top25 .rank{color:var(--muted)}
+  .leaderboard-top25 .score{color:#60a5fa}
+  .leaderboard-rest .player-row{border-bottom:1px solid rgba(148,163,184,.20)}
+  .leaderboard-rest .rank{color:var(--muted)}
+  .leaderboard-rest .score{color:#60a5fa}
+}

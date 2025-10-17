@@ -146,11 +146,11 @@
 			</div>
 		</section>
 
-        <div class="grid two">
+        <div class="grid-12 dashboard-grid">
             <!-- XP & Level System -->
-			<section class="card xp-card">
+			<section class="card xp-card span-12">
                 <div class="card-head">
-					<h3>XP & Level</h3>
+					<h3>XP, Level & Weekly Progress</h3>
 					<div class="xp-stats">
 						<div class="user">
 							<div class="avatar">👩‍💻</div>
@@ -177,46 +177,7 @@
 					<span>TOPCIT Master</span>
 				</div>
                 <p class="progress-hint"><span data-gained-xp>+120</span> XP today • Keep going to reach <span data-next-level>System Architect</span></p>
-            </section>
-
-            <!-- Achievement Badges -->
-			<section class="card badges-card">
-                <div class="card-head">
-                    <h3>Achievement Badges</h3>
-                    <button class="btn tiny ghost">View all</button>
-                </div>
-                <div class="badges">
-					<div class="badge gold" title="First Quiz Completed" data-tip="Complete your first quiz to earn this!">
-                        <div class="shine"></div>
-                        <div class="icon">✅</div>
-                        <div class="label">First Quiz Completed</div>
-                    </div>
-					<div class="badge orange" title="5-Day Streak Hero" data-tip="Study for 5 days in a row.">
-                        <div class="shine"></div>
-                        <div class="icon">🔥</div>
-                        <div class="label">5-Day Streak Hero</div>
-                    </div>
-					<div class="badge blue" title="Database Domain Conqueror" data-tip="Score 80%+ in Database quizzes.">
-                        <div class="shine"></div>
-                        <div class="icon">🗄️</div>
-                        <div class="label">Database Domain Conqueror</div>
-                    </div>
-					<div class="badge purple" title="Accuracy 90%+" data-tip="Maintain 90% overall accuracy for a week.">
-                        <div class="shine"></div>
-                        <div class="icon">🎯</div>
-                        <div class="label">Accuracy 90%+</div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-		<div class="grid two">
-            <!-- Weekly Progress Dashboard -->
-            <section class="card analytics-card">
-                <div class="card-head">
-                    <h3>Weekly Progress</h3>
-                    <span class="chip subtle">Keep your streak!</span>
-                </div>
+                <div class="section-title">Weekly Progress</div>
                 <div class="charts">
                     <div class="chart" data-chart-hours>
                         <div class="chart-title">Study Hours</div>
@@ -238,8 +199,8 @@
                         <div class="lines">
                             <div class="line programming" style="--p1:35%; --p2:60%; --p3:75%; --p4:85%; --p5:80%; --p6:70%; --p7:90%"></div>
                             <div class="line databases" style="--p1:20%; --p2:40%; --p3:55%; --p4:60%; --p5:70%; --p6:75%; --p7:78%"></div>
-							<div class="line design" style="--p1:25%; --p2:45%; --p3:58%; --p4:66%; --p5:72%; --p6:78%; --p7:83%"></div>
-							<div class="line business" style="--p1:30%; --p2:35%; --p3:45%; --p4:55%; --p5:62%; --p6:68%; --p7:74%"></div>
+						<div class="line design" style="--p1:25%; --p2:45%; --p3:58%; --p4:66%; --p5:72%; --p6:78%; --p7:83%"></div>
+						<div class="line business" style="--p1:30%; --p2:35%; --p3:45%; --p4:55%; --p5:62%; --p6:68%; --p7:74%"></div>
                         </div>
                         <div class="legend">
                             <span class="dot programming"></span> Programming
@@ -251,61 +212,58 @@
                 </div>
             </section>
 
-			<!-- Reward Store & Leaderboard -->
-            <section class="card store-leaderboard-card">
+			<!-- Reward Store -->
+            <section class="card store-card span-6">
                 <div class="card-head">
-                    <h3>Rewards & Leaderboard</h3>
+                    <h3>Reward Store</h3>
+                    <a class="btn tiny ghost" href="rewards.html" title="See more rewards">More rewards →</a>
                 </div>
-                <div class="split">
-                    <div class="store">
-                        <div class="section-title">Reward Store</div>
-                        <div class="store-items">
-                            <div class="store-item" data-redeem data-cost="250">
-                                <div class="avatar">🐱</div>
-                                <div class="meta">
-                                    <div class="name">Cat Avatar</div>
-                                    <div class="cost"><span class="coin">🪙</span> 250</div>
-                                </div>
-                                <button class="btn small">Redeem</button>
-                            </div>
-                            <div class="store-item" data-redeem data-cost="400">
-                                <div class="avatar">🌌</div>
-                                <div class="meta">
-                                    <div class="name">Galaxy Theme</div>
-                                    <div class="cost"><span class="coin">🪙</span> 400</div>
-                                </div>
-                                <button class="btn small">Redeem</button>
-                            </div>
-                            <div class="store-item" data-redeem data-cost="500">
-                                <div class="avatar">🧠</div>
-                                <div class="meta">
-                                    <div class="name">Bonus Quiz Pack</div>
-                                    <div class="cost"><span class="coin">🪙</span> 500</div>
-                                </div>
-                                <button class="btn small">Redeem</button>
-                            </div>
+                <div class="store-items">
+                    <div class="store-item" data-redeem data-cost="250">
+                        <div class="avatar">🐱</div>
+                        <div class="meta">
+                            <div class="name">Cat Avatar</div>
+                            <div class="cost"><span class="coin">🪙</span> 250</div>
                         </div>
+                        <button class="btn small primary">Redeem</button>
                     </div>
-					<div class="leaderboard">
-                        <div class="section-title">Leaderboard</div>
-                        <ol class="board">
-                            <li class="top1"><span class="rank">1</span><span class="medal">🥇</span><span class="pic">🦊</span><span class="user">Aarav</span><span class="score">2,340 XP</span></li>
-                            <li class="top2"><span class="rank">2</span><span class="medal">🥈</span><span class="pic">🐼</span><span class="user">Mina</span><span class="score">2,120 XP</span></li>
-                            <li class="top3"><span class="rank">3</span><span class="medal">🥉</span><span class="pic">🦁</span><span class="user">Jae</span><span class="score">1,980 XP</span></li>
-                            <li><span class="rank">4</span><span class="pic">🐨</span><span class="user">Linh</span><span class="score">1,760 XP</span></li>
-                            <li><span class="rank">5</span><span class="pic">🐧</span><span class="user">Noah</span><span class="score">1,620 XP</span></li>
-                            <li><span class="rank">6</span><span class="pic">🦄</span><span class="user">Sara</span><span class="score">1,510 XP</span></li>
-                            <li><span class="rank">7</span><span class="pic">🐯</span><span class="user">Dae</span><span class="score">1,390 XP</span></li>
-                            <li><span class="rank">8</span><span class="pic">🐸</span><span class="user">Nikhil</span><span class="score">1,280 XP</span></li>
-                            <li><span class="rank">9</span><span class="pic">🦔</span><span class="user">Emma</span><span class="score">1,150 XP</span></li>
-                            <li><span class="rank">10</span><span class="pic">🦉</span><span class="user">Yuna</span><span class="score">1,030 XP</span></li>
-                        </ol>
+                    <div class="store-item" data-redeem data-cost="400">
+                        <div class="avatar">🌌</div>
+                        <div class="meta">
+                            <div class="name">Galaxy Theme</div>
+                            <div class="cost"><span class="coin">🪙</span> 400</div>
+                        </div>
+                        <button class="btn small primary">Redeem</button>
+                    </div>
+                    <div class="store-item" data-redeem data-cost="500">
+                        <div class="avatar">🧠</div>
+                        <div class="meta">
+                            <div class="name">Bonus Quiz Pack</div>
+                            <div class="cost"><span class="coin">🪙</span> 500</div>
+                        </div>
+                        <button class="btn small primary">Redeem</button>
+                    </div>
                 </div>
+            </section>
+
+			<!-- Leaderboard -->
+            <section class="card leaderboard-card span-6">
+                <div class="card-head">
+                    <h3>Leaderboard</h3>
+                    <a class="btn tiny ghost" href="leaderboards.html" title="See full leaderboard">See more →</a>
+                </div>
+                <ol class="board">
+                    <li class="top1"><span class="rank">1</span><span class="medal">🥇</span><span class="pic">🦊</span><span class="user">Aarav</span><span class="score">2,340 XP</span></li>
+                    <li class="top2"><span class="rank">2</span><span class="medal">🥈</span><span class="pic">🐼</span><span class="user">Mina</span><span class="score">2,120 XP</span></li>
+                    <li class="top3"><span class="rank">3</span><span class="medal">🥉</span><span class="pic">🦁</span><span class="user">Jae</span><span class="score">1,980 XP</span></li>
+                    <li><span class="rank">4</span><span class="pic">🐨</span><span class="user">Linh</span><span class="score">1,760 XP</span></li>
+                    <li><span class="rank">5</span><span class="pic">🐧</span><span class="user">Noah</span><span class="score">1,620 XP</span></li>
+                </ol>
             </section>
         </div>
 
 		<!-- Learning Materials (separate card) -->
-		<section class="card materials-card">
+		<section class="card materials-card span-12">
 			<div class="card-head">
 				<h3>Learning Materials</h3>
 				<span class="chip subtle">Quick access</span>

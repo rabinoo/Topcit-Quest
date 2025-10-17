@@ -156,6 +156,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 /* Simulated points via gradients */
 .line.programming{--c:#2563eb}
 .line.databases{--c:#0ea5e9}
+.line.design{--c:#8b5cf6}
 .line.business{--c:#22c55e}
 
 .legend{display:flex;gap:14px;align-items:center;margin-top:auto;color:var(--muted);font-size:12px}
@@ -236,24 +237,87 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 /* Materials */
 .materials .materials-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .materials .materials-list li{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;background:#f8fafc;padding:10px;border:1px solid #eef2f7;border-radius:12px}
-.materials .materials-list a{color:#0f172a;text-decoration:none;font-weight:700}
-.materials .materials-list .meta{color:var(--muted);font-weight:700}
-.materials .group-title{font-weight:800;margin:10px 0 6px}
+.materials .materials-list a{color:var(--text);text-decoration:none;font-weight:700}
+.materials .materials-list a:hover{color:#60a5fa; text-shadow:0 0 6px rgba(96,165,250,.25)}
+.materials .group-title{color:var(--text);font-weight:800;margin:10px 0 6px}
 
 /* SVG Gradient for rings */
 svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
 
 /* 12-col grid utilities */
-.grid-12{display:grid;grid-template-columns:repeat(12, minmax(0,1fr));gap:24px}
+.grid-12{display:grid;grid-template-columns:repeat(12, minmax(0,1fr));gap:24px;align-items:start}
 .span-12{grid-column:span 12}
+.span-8{grid-column:span 8}
 .span-6{grid-column:span 6}
 .span-4{grid-column:span 4}
 @media (max-width:1024px){
   .grid-12{gap:16px}
-  .span-6,.span-4{grid-column:span 12}
+  .span-8,.span-6,.span-4{grid-column:span 12}
 }
 
 .xp-chip{display:inline-flex;align-items:center;gap:6px}
+.materials .materials-list .meta{color:var(--muted);font-weight:700}
+
+@media (prefers-color-scheme: dark) {
+  /* Chips in card headers */
+  .chip.subtle{background:rgba(148,163,184,.18); color:#a5b4fc; border:1px solid rgba(148,163,184,.25)}
+  .chip.blue{background:rgba(96,165,250,.18); color:#93c5fd}
+  .chip.orange{background:rgba(253,186,116,.18); color:#f59e0b}
+
+  /* Neutral buttons (e.g., Redeem in Store) */
+  .btn{background:rgba(255,255,255,.12); color:var(--text); border:1px solid rgba(148,163,184,.28)}
+  .btn:hover{background:rgba(255,255,255,.16); box-shadow:0 8px 18px rgba(0,0,0,.45)}
+  .btn.ghost{color:var(--text); border-color:rgba(148,163,184,.35)}
+}
+.xp-chip{display:inline-flex;align-items:center;gap:6px}
+.materials .materials-list .meta{color:var(--muted);font-weight:700}
+
+@media (prefers-color-scheme: dark) {
+  :root{
+    --bg:#0b1220;             /* page background */
+    --card:#0e1625;           /* surfaces/cards */
+    --text:#e5e7eb;           /* primary text */
+    --muted:#94a3b8;          /* secondary text */
+    --shadow:0 10px 25px rgba(0,0,0,0.45);
+  }
+
+  body::before{opacity:.16; background:radial-gradient(closest-side, rgba(2,132,199,.22), transparent 70%);} 
+  body::after{opacity:.14; background:radial-gradient(closest-side, rgba(244,162,97,.16), transparent 70%);} 
+
+  .app-header{background:linear-gradient(135deg, rgba(2,8,23,.96), rgba(30,64,175,.88)); color:#fff}
+
+  .card{background:rgba(2,8,23,.72); border:1px solid rgba(148,163,184,.18);} 
+  .topic{background:rgba(2,8,23,.70); border:1px solid rgba(148,163,184,.18); box-shadow:0 10px 20px rgba(0,0,0,.35)}
+  .topic:hover{background:linear-gradient(180deg, rgba(2,8,23,.78), rgba(2,8,23,.70)); box-shadow:0 18px 32px rgba(0,0,0,.45)}
+  .ring .bg{stroke:#334155}
+  .ring-label{color:var(--text)}
+
+  /* Learning Materials, Store, Leaderboard items */
+  .materials .materials-list li,
+  .store-item,
+  .board li{background:rgba(2,8,23,.70); border-color:rgba(148,163,184,.18)}
+
+  .board li.top1{border-color:rgba(250,204,21,.35); background:linear-gradient(180deg, rgba(250,204,21,.12), rgba(2,8,23,.62))}
+  .board li.top2{border-color:rgba(148,163,184,.30); background:linear-gradient(180deg, rgba(148,163,184,.12), rgba(2,8,23,.62))}
+  .board li.top3{border-color:rgba(253,186,116,.35); background:linear-gradient(180deg, rgba(253,186,116,.12), rgba(2,8,23,.62))}
+  .rank{color:var(--text)}
+  .score{color:#60a5fa; text-shadow:0 0 8px rgba(96,165,250,.25)}
+
+  .icon-badge{background:linear-gradient(135deg, rgba(30,58,138,.35), rgba(244,162,97,.18))}
+
+  /* Charts - dark theme */
+  .chart{background:rgba(2,8,23,.70); border-color:rgba(148,163,184,.18)}
+  .chart-title{color:var(--text)}
+  .lines{background:repeating-linear-gradient(to top, rgba(148,163,184,.16), rgba(148,163,184,.16) 1px, transparent 1px, transparent 18px)}
+  .bar{background:linear-gradient(180deg, rgba(245,158,11,.55), rgba(234,88,12,.45)); box-shadow:inset 0 -2px 0 rgba(148,163,184,.24), 0 6px 14px rgba(234,88,12,.28)}
+  .bar::after{background:linear-gradient(90deg, rgba(148,163,184,.22), transparent)}
+  .line.programming{--c:#60a5fa}
+  .line.databases{--c:#36c6ff}
+  .line.design{--c:#a78bfa}
+  .line.business{--c:#34d399}
+  .legend{color:var(--muted)}
+  .x-labels{color:var(--muted)}
+}
 
 
 
