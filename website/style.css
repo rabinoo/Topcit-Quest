@@ -65,6 +65,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 /* header streak condensed into controls; remove old hero styles */
 .brand{display:flex;align-items:center;gap:12px}
 .logo{font-size:24px}
+.logo-img{width:36px;height:36px;display:block}
 .titles h1{margin:0;font-size:20px;font-weight:800}
 .titles .subtitle{margin:0;color:#e2e8f0;font-size:13px}
 
@@ -318,6 +319,11 @@ svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
   .legend{color:var(--muted)}
   .x-labels{color:var(--muted)}
 }
+
+
+
+
+.store-logo{width:28px;height:28px;display:block;object-fit:contain}
 
 
 

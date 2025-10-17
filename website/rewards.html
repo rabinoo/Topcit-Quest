@@ -15,7 +15,7 @@
     <header class="app-header">
         <div class="header-top">
             <div class="brand">
-                <div class="logo">🔥</div>
+                <div class="logo"><img class="logo-img" src="topcit-quest-logo.svg" alt="TOPCIT Quest logo"></div>
                 <div class="titles">
                     <h1>TOPCIT Quest</h1>
                     <p class="subtitle">Master IT through daily practice and rewards</p>
@@ -52,77 +52,122 @@
                 <span class="chip subtle">Redeem your coins</span>
             </div>
             <div class="rewards-grid">
-                <div class="reward-item">
-                    <div class="reward-icon">💻</div>
+                <div class="reward-item" data-redeem data-cost="1500">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/tryhackme_logo_full.svg" alt="TryHackMe logo" loading="lazy"></div>
                     <div class="reward-details">
-                        <h4>HackerRank 1-Month Premium</h4>
-                        <p>Access to premium coding challenges and assessments</p>
+                        <h4>TryHackMe Premium</h4>
+                        <p>Interactive cybersecurity labs and guided learning paths with premium rooms.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 1,500</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="1500">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="1500">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/mega-menu-logo-htb.svg" alt="Hack The Box logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Hack The Box VIP</h4>
+                        <p>Advanced pentesting labs, VIP challenges, and exclusive content for red teamers.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 1,500</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="1500">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="650">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/1725820354spotify-logo-png.webp" alt="Spotify logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Spotify Premium</h4>
+                        <p>Ad‑free music, offline downloads, and unlimited skips across all devices.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 650</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="650">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="750">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/youtube-vector-logo-png-9.webp" alt="YouTube logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>YouTube Premium</h4>
+                        <p>Ad‑free videos, background play, YouTube Music, and offline downloads.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 750</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="750">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="10000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/jetbrains-logo-png_seeklogo-300262.webp" alt="JetBrains logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>JetBrains All Products Pack</h4>
+                        <p>Complete suite of JetBrains IDEs and tools for professional development.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 10,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="10000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/photoshop-56.svg" alt="Adobe Photoshop logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Photoshop License</h4>
+                        <p>Industry‑standard photo editing, compositing, and retouching tools.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/premiere-pro-40.svg" alt="Adobe Premiere Pro logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Premiere License</h4>
+                        <p>Professional video editing software for timelines, color, and audio mixing.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/illustrator.svg" alt="Adobe Illustrator logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Illustrator License</h4>
+                        <p>Vector design and illustration tools for logos, icons, and artwork.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/after-effects.svg" alt="Adobe After Effects logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe After Effects License</h4>
+                        <p>Motion graphics and visual effects for cinematic titles and composites.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="2000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/leetcode.svg" alt="LeetCode logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>LeetCode Premium</h4>
+                        <p>Company‑tagged questions, detailed solutions, and mock interviews.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 2,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="2000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="6000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/adobe-creative-cloud.svg" alt="Adobe Creative Cloud logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Creative Cloud</h4>
+                        <p>Access to Adobe apps including Photoshop, Illustrator, Premiere, and more.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 6,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="6000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="500">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/canva.svg" alt="Canva logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Canva Pro</h4>
+                        <p>Premium templates, brand kit, background remover, and collaboration tools.</p>
                         <div class="reward-cost"><span class="coin">🪙</span> 500</div>
                     </div>
                     <button class="btn primary redeem-btn" data-cost="500">Redeem</button>
                 </div>
-                <div class="reward-item">
-                    <div class="reward-icon">🧩</div>
+                <div class="reward-item" data-redeem data-cost="400">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/grammarly.svg" alt="Grammarly logo" loading="lazy"></div>
                     <div class="reward-details">
-                        <h4>LeetCode 1-Month Premium</h4>
-                        <p>Unlimited access to problems, solutions, and mock interviews</p>
-                        <div class="reward-cost"><span class="coin">🪙</span> 450</div>
-                    </div>
-                    <button class="btn primary redeem-btn" data-cost="450">Redeem</button>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-icon">📜</div>
-                    <div class="reward-details">
-                        <h4>TOPCIT Certification Voucher</h4>
-                        <p>Official TOPCIT exam voucher with 20% discount</p>
-                        <div class="reward-cost"><span class="coin">🪙</span> 800</div>
-                    </div>
-                    <button class="btn primary redeem-btn" data-cost="800">Redeem</button>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-icon">📚</div>
-                    <div class="reward-details">
-                        <h4>TOPCIT Study Guide Bundle</h4>
-                        <p>Complete PDF guides for all TOPCIT domains</p>
-                        <div class="reward-cost"><span class="coin">🪙</span> 300</div>
-                    </div>
-                    <button class="btn primary redeem-btn" data-cost="300">Redeem</button>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-icon">🎓</div>
-                    <div class="reward-details">
-                        <h4>Online TOPCIT Prep Course</h4>
-                        <p>1-month access to video lectures and practice tests</p>
-                        <div class="reward-cost"><span class="coin">🪙</span> 600</div>
-                    </div>
-                    <button class="btn primary redeem-btn" data-cost="600">Redeem</button>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-icon">🏆</div>
-                    <div class="reward-details">
-                        <h4>Custom Avatar Pack</h4>
-                        <p>Exclusive TOPCIT-themed avatars and badges</p>
-                        <div class="reward-cost"><span class="coin">🪙</span> 250</div>
-                    </div>
-                    <button class="btn primary redeem-btn" data-cost="250">Redeem</button>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-icon">🔥</div>
-                    <div class="reward-details">
-                        <h4>Streak Bonus Multiplier</h4>
-                        <p>2x XP for 7-day streak maintenance</p>
+                        <h4>Grammarly Premium</h4>
+                        <p>Advanced grammar, clarity, tone suggestions, and plagiarism detection.</p>
                         <div class="reward-cost"><span class="coin">🪙</span> 400</div>
                     </div>
                     <button class="btn primary redeem-btn" data-cost="400">Redeem</button>
-                </div>
-                <div class="reward-item">
-                    <div class="reward-icon">📊</div>
-                    <div class="reward-details">
-                        <h4>Progress Analytics Report</h4>
-                        <p>Detailed performance insights and recommendations</p>
-                        <div class="reward-cost"><span class="coin">🪙</span> 350</div>
-                    </div>
-                    <button class="btn primary redeem-btn" data-cost="350">Redeem</button>
                 </div>
             </div>
         </section>

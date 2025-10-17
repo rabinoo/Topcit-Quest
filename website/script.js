@@ -102,12 +102,38 @@
   function getWallet(){ return parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0; }
   function setWallet(value){ if(walletAmountEl){ walletAmountEl.textContent = value.toLocaleString(); } }
 
-  // Filter store items on dashboard by affordability
+  // Filter store items on dashboard by affordability (disable instead of hide)
   function filterAffordableStoreItems(){
     const have = getWallet();
     redeemables.forEach(el=>{
+      const inDashboardStore = !!el.closest('.store-items');
+      if(!inDashboardStore) return; // Rewards page remains unaffected
       const cost = parseInt(el.getAttribute('data-cost') || '0', 10);
-      el.style.display = have >= cost ? '' : 'none';
+      const btn = el.querySelector('button');
+      if(!btn) return;
+      if(have >= cost){
+        el.classList.remove('locked');
+        btn.disabled = false;
+      }else{
+        el.classList.add('locked');
+        btn.disabled = true;
+      }
+    });
+  }
+
+  // Limit dashboard store to showing only the first 5 items
+  function limitDashboardStoreItems(maxCount = 5){
+    const container = document.querySelector('.store-items');
+    if(!container) return;
+    const items = Array.from(container.querySelectorAll('.store-item'));
+    let shown = 0;
+    items.forEach(item=>{
+      if(shown < maxCount){
+        item.style.display = '';
+        shown++;
+      }else{
+        item.style.display = 'none';
+      }
     });
   }
 
@@ -121,6 +147,7 @@
     setWallet(have - cost);
     // Re-filter store items after wallet changes
     filterAffordableStoreItems();
+    limitDashboardStoreItems();
     el.classList.add('redeemed');
     const btn = el.querySelector('button');
     if(btn){ btn.disabled = true; btn.textContent = 'Redeemed'; }
@@ -160,6 +187,7 @@
   window.addEventListener('load', revealCharts);
   window.addEventListener('load', animateRings);
   window.addEventListener('load', filterAffordableStoreItems);
+  window.addEventListener('load', limitDashboardStoreItems);
 })();
 
 

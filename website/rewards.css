@@ -128,3 +128,5 @@
   .redeem-btn{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
   .redeem-btn:hover{background:linear-gradient(135deg,#1e40af,#1d4ed8)}
 }
+
+.reward-logo { width: 56px; height: 56px; display: block; margin: 0 auto; object-fit: contain; }
