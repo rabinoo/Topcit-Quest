@@ -71,7 +71,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .titles .subtitle{margin:0;color:#e2e8f0;font-size:13px}
 
 .quick-actions{display:flex;gap:10px}
-.btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;transition:.2s box-shadow,.2s transform, .2s background-color, .2s border-color}
+.btn{border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;transition:.2s box-shadow,.2s transform, .2s background-color, .2s border-color; text-decoration:none}
 .btn.primary{background:#007BFF;color:#fff;border:1px solid rgba(0,0,0,.08)}
 .btn.primary:hover{background:#0066d6;box-shadow:0 10px 24px rgba(0,102,214,.35)}
 .btn.ghost{background:transparent;color:#0f172a;border:2px solid rgba(15,23,42,.2)}
@@ -243,6 +243,14 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .materials .materials-list a:hover{color:#60a5fa; text-shadow:0 0 6px rgba(96,165,250,.25)}
 .materials .group-title{color:var(--text);font-weight:800;margin:10px 0 6px}
 
+/* Learn Courses */
+.learn-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(260px,1fr));gap:16px}
+.learn-item{background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.learn-item .meta{display:flex;gap:8px;color:var(--muted);font-weight:700}
+.learn-item .course-actions{display:flex;gap:8px;align-items:center}
+.learn-item.completed{opacity:.75}
+.learn-item .course-content{color:var(--muted)}
+
 /* SVG Gradient for rings */
 svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
 
@@ -296,6 +304,155 @@ svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
 
   /* Learning Materials, Store, Leaderboard items */
   .materials .materials-list li,
+  .learn-item,
+  .store-item,
+  .board li{background:rgba(2,8,23,.70); border-color:rgba(148,163,184,.18)}
+
+  .board li.top1{border-color:rgba(250,204,21,.35); background:linear-gradient(180deg, rgba(250,204,21,.12), rgba(2,8,23,.62))}
+  .board li.top2{border-color:rgba(148,163,184,.30); background:linear-gradient(180deg, rgba(148,163,184,.12), rgba(2,8,23,.62))}
+  .board li.top3{border-color:rgba(253,186,116,.35); background:linear-gradient(180deg, rgba(253,186,116,.12), rgba(2,8,23,.62))}
+  .rank{color:var(--text)}
+  .score{color:#60a5fa; text-shadow:0 0 8px rgba(96,165,250,.25)}
+
+  .icon-badge{background:linear-gradient(135deg, rgba(30,58,138,.35), rgba(244,162,97,.18))}
+
+  /* Charts - dark theme */
+  .chart{background:rgba(2,8,23,.70); border-color:rgba(148,163,184,.18)}
+  .chart-title{color:var(--text)}
+  .lines{background:repeating-linear-gradient(to top, rgba(148,163,184,.16), rgba(148,163,184,.16) 1px, transparent 1px, transparent 18px)}
+  .bar{background:linear-gradient(180deg, rgba(245,158,11,.55), rgba(234,88,12,.45)); box-shadow:inset 0 -2px 0 rgba(148,163,184,.24), 0 6px 14px rgba(234,88,12,.28)}
+  .bar::after{background:linear-gradient(90deg, rgba(148,163,184,.22), transparent)}
+  .line.programming{--c:#60a5fa}
+  .line.databases{--c:#36c6ff}
+  .line.design{--c:#a78bfa}
+  .line.business{--c:#34d399}
+  .legend{color:var(--muted)}
+  .x-labels{color:var(--muted)}
+}
+
+
+
+
+.store-logo{width:28px;height:28px;display:block;object-fit:contain}
+
+
+
+
+/* Sub-tabs for Learn page */
+.sub-tabs{display:flex;gap:8px;margin:0 0 12px}
+.sub-tab{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;border:1px solid #eef2f7;background:#f8fafc;color:var(--text);font-weight:700;cursor:pointer}
+.sub-tab.active{background:linear-gradient(135deg, rgba(0,123,255,.12), rgba(244,162,97,.12));border-color:#e2e8f0}
+
+/* Completed chip */
+.chip.green{background:rgba(34,197,94,.18);color:#15803d}
+
+@media (prefers-color-scheme: dark){
+  .sub-tab{border-color:rgba(148,163,184,.28);background:rgba(255,255,255,.08)}
+  .sub-tab.active{background:linear-gradient(135deg, rgba(30,58,138,.25), rgba(244,162,97,.14));border-color:rgba(148,163,184,.35)}
+  .chip.green{background:rgba(34,197,94,.18);color:#34d399}
+}
+
+
+
+
+.store-logo{width:28px;height:28px;display:block;object-fit:contain}
+
+
+
+
+/* Disabled state for finish button */
+.btn.is-disabled,
+.btn[aria-disabled="true"],
+.btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+/* Course page content styles */
+.course-card .task {
+  background: rgba(255,255,255,0.6);
+  border: 1px solid rgba(226,232,240,0.8);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.course-card .actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+.quiz-options label {
+  display: block;
+  padding: 6px 8px;
+  border: 1px solid #eef2f7;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.text-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+/* Completion view */
+.course-card .completion{ display:grid; justify-items:center; text-align:center; gap:12px; padding:36px 20px; }
+.course-card .completion .celebrate{ display:flex; align-items:center; gap:12px; justify-content:center; }
+.course-card .completion h3{ margin:0; font-size:24px; font-weight:800; }
+.course-card .completion .summary{ font-weight:800; color:var(--text); margin:6px 0 12px; }
+.course-card .completion .actions{ display:flex; gap:10px; justify-content:center; }
+.course-card .trophy{ width:64px; height:64px; border-radius:50%; display:grid; place-items:center; font-size:28px; color:#fff; background:linear-gradient(135deg, rgba(0,123,255,.36), rgba(244,162,97,.28)); box-shadow:0 12px 26px rgba(2,8,23,.22), inset 0 2px 8px rgba(255,255,255,.25); }
+
+/* Highlight incomplete tasks when attempting to finish */
+.course-card .task.needs-action{
+  border-color:#dc2626;
+  box-shadow:0 0 0 2px rgba(220,38,38,.25);
+  animation:taskPulse .9s ease-in-out;
+}
+@keyframes taskPulse{
+  0%{transform:none}
+  50%{transform:translateY(-1px)}
+  100%{transform:none}
+}
+@media (prefers-color-scheme: dark){
+  .course-card .task {
+    background: rgba(2,8,23,0.70);
+    border-color: rgba(148,163,184,0.18);
+  }
+  .quiz-options label { border-color: rgba(148,163,184,0.18); }
+  .text-input { background: rgba(2,8,23,0.70); color: var(--text); border-color: rgba(148,163,184,0.25); }
+  .course-card .trophy{ background:linear-gradient(135deg, rgba(30,64,175,.45), rgba(244,162,97,.28)); box-shadow:0 12px 28px rgba(0,0,0,.45), inset 0 2px 8px rgba(255,255,255,.08); }
+  .course-card .task.needs-action{border-color:rgba(239,68,68,.55); box-shadow:0 0 0 2px rgba(239,68,68,.25)}
+}
+.xp-chip{display:inline-flex;align-items:center;gap:6px}
+.materials .materials-list .meta{color:var(--muted);font-weight:700}
+
+@media (prefers-color-scheme: dark) {
+  :root{
+    --bg:#0b1220;             /* page background */
+    --card:#0e1625;           /* surfaces/cards */
+    --text:#e5e7eb;           /* primary text */
+    --muted:#94a3b8;          /* secondary text */
+    --shadow:0 10px 25px rgba(0,0,0,0.45);
+  }
+
+  body::before{opacity:.16; background:radial-gradient(closest-side, rgba(2,132,199,.22), transparent 70%);} 
+  body::after{opacity:.14; background:radial-gradient(closest-side, rgba(244,162,97,.16), transparent 70%);} 
+
+  .app-header{background:linear-gradient(135deg, rgba(2,8,23,.96), rgba(30,64,175,.88)); color:#fff}
+
+  .card{background:rgba(2,8,23,.72); border:1px solid rgba(148,163,184,.18);} 
+  .topic{background:rgba(2,8,23,.70); border:1px solid rgba(148,163,184,.18); box-shadow:0 10px 20px rgba(0,0,0,.35)}
+  .topic:hover{background:linear-gradient(180deg, rgba(2,8,23,.78), rgba(2,8,23,.70)); box-shadow:0 18px 32px rgba(0,0,0,.45)}
+  .ring .bg{stroke:#334155}
+  .ring-label{color:var(--text)}
+
+  /* Learning Materials, Store, Leaderboard items */
+  .materials .materials-list li,
+  .learn-item,
   .store-item,
   .board li{background:rgba(2,8,23,.70); border-color:rgba(148,163,184,.18)}
 

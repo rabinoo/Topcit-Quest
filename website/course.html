@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course | Topcit Quest</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="rewards.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-top">
+      <div class="brand">
+        <div class="logo"><img class="logo-img" src="topcit-quest-logo.svg" alt="TOPCIT Quest logo"></div>
+        <div class="titles">
+          <h1>TOPCIT Quest</h1>
+          <p class="subtitle">Master IT through daily practice and rewards</p>
+        </div>
+      </div>
+      <nav class="main-nav" aria-label="Primary">
+        <a class="tab" href="index.html" title="Dashboard">📊 <span>Dashboard</span></a>
+        <a class="tab active" href="learn.html" title="Learn">📘 <span>Learn</span></a>
+        <a class="tab" href="leaderboards.html" title="Leaderboards">🏆 <span>Leaderboards</span></a>
+        <a class="tab" href="rewards.html" title="Rewards">🎁 <span>Rewards</span></a>
+      </nav>
+      <nav class="header-controls" aria-label="User controls">
+        <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim">🔥</span><span class="streak-num">7</span><span>day streak</span></div>
+        <button class="icon-btn" id="notify-btn" aria-label="Notifications">🔔<span class="dot-badge" aria-hidden="true"></span></button>
+        <div class="wallet chip" title="Your coins"><span class="coin-icon">🪙</span><span class="amount" data-wallet-amount>0</span></div>
+        <div class="user-menu">
+          <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false">
+            <span class="avatar">👩‍💻</span>
+          </button>
+          <div class="menu" id="user-dropdown" role="menu" aria-hidden="true">
+            <button class="menu-item" role="menuitem">Profile</button>
+            <button class="menu-item" role="menuitem">Settings</button>
+            <button class="menu-item danger" role="menuitem" id="logout-btn">Log out</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card course-card" id="course-page" data-course-container>
+      <div class="card-head">
+        <h3 data-course-title>Course</h3>
+        <div class="chip-group">
+          <span class="chip blue" data-course-xp>XP 0</span>
+          <span class="chip orange" data-course-coins>Coins 0</span>
+        </div>
+      </div>
+
+      <div class="course-body" data-course-body>
+        <div class="task">
+          <h4>Read</h4>
+          <p>Review the following material:</p>
+          <ul data-task-read-list></ul>
+          <button class="btn small" data-mark-read>Mark as read</button>
+          <div class="meta" data-read-status>Not marked</div>
+        </div>
+
+        <div class="task">
+          <h4>Quiz</h4>
+          <p data-quiz-question>Answer the question:</p>
+          <div class="quiz-options" data-quiz-options></div>
+          <div class="meta">Select the correct answer to proceed.</div>
+        </div>
+
+        <div class="task">
+          <h4>Reflection</h4>
+          <p>Write a short reflection (≥ 20 characters):</p>
+          <input type="text" class="text-input" data-reflection-input />
+        </div>
+
+        <div class="actions">
+          <a href="learn.html" class="btn ghost">Back</a>
+          <button class="btn primary" data-course-finish disabled>Finish & claim</button>
+        </div>
+      </div>
+
+      <div class="completion" data-completion style="display:none">
+        <div class="celebrate">
+          <div class="trophy" aria-hidden="true">🏆</div>
+          <h3>Course Completed 🎉</h3>
+        </div>
+        <p class="summary" data-completion-summary>+0 XP • +0 coins</p>
+        <div class="actions">
+          <a href="rewards.html" class="btn primary">Go to Rewards</a>
+          <a href="learn.html" class="btn">Back to Learn</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">© 2025 Topcit Quest</footer>
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

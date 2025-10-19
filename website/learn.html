@@ -47,10 +47,177 @@
     <main class="container">
         <section class="card">
             <div class="card-head">
-                <h3>Learn</h3>
-                <span class="chip subtle">Pick a domain to study</span>
+                <h3>TOPCIT Courses</h3>
+                <span class="chip subtle">Complete courses to earn XP & coins</span>
             </div>
-            <p>Welcome to the Learn section. Use the dashboard on the home page to jump into topics, or browse materials in Resources.</p>
+            <div class="sub-tabs" data-sub-tabs>
+                <button class="sub-tab active" data-tab="all">All Courses</button>
+                <button class="sub-tab" data-tab="completed">Completed Courses</button>
+            </div>
+            <div class="learn-grid" data-all-grid>
+                <!-- Requirements Engineering -->
+                <article class="learn-item" data-course-id="requirements">
+                    <h4>Requirements Engineering</h4>
+                    <p>Learn to gather, analyze, and validate software requirements for reliable systems.</p>
+                    <div class="meta"><span class="chip blue">XP 80</span><span class="chip orange">Coins 120</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="80" data-coins="120">Start</button>
+                        <button class="btn" data-course-finish data-xp="80" data-coins="120" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>Functional vs. non-functional requirements</li>
+                            <li>Use cases, user stories, acceptance criteria</li>
+                            <li>Traceability and validation</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Software Design -->
+                <article class="learn-item" data-course-id="design">
+                    <h4>Software Design & Architecture</h4>
+                    <p>Explore design principles, patterns, and architecture trade-offs.</p>
+                    <div class="meta"><span class="chip blue">XP 90</span><span class="chip orange">Coins 140</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="90" data-coins="140">Start</button>
+                        <button class="btn" data-course-finish data-xp="90" data-coins="140" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>SOLID, cohesion and coupling</li>
+                            <li>Layered, microservices, event-driven systems</li>
+                            <li>Design patterns cheat-sheet</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Programming -->
+                <article class="learn-item" data-course-id="programming">
+                    <h4>Programming Fundamentals</h4>
+                    <p>Core constructs, data types, control flow, and problem solving.</p>
+                    <div class="meta"><span class="chip blue">XP 60</span><span class="chip orange">Coins 100</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="60" data-coins="100">Start</button>
+                        <button class="btn" data-course-finish data-xp="60" data-coins="100" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>Variables, functions, collections</li>
+                            <li>Algorithmic thinking and complexity basics</li>
+                            <li>Debugging strategies</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Databases -->
+                <article class="learn-item" data-course-id="databases">
+                    <h4>Database Modeling</h4>
+                    <p>Relational modeling, normalization, and SQL fundamentals.</p>
+                    <div class="meta"><span class="chip blue">XP 70</span><span class="chip orange">Coins 110</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="70" data-coins="110">Start</button>
+                        <button class="btn" data-course-finish data-xp="70" data-coins="110" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>ER diagrams, keys, relationships</li>
+                            <li>SQL: SELECT, JOIN, GROUP BY</li>
+                            <li>Indexes and transactions</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Networks -->
+                <article class="learn-item" data-course-id="networks">
+                    <h4>Networking Fundamentals</h4>
+                    <p>Understand the Internet stack, addressing, routing, and protocols.</p>
+                    <div class="meta"><span class="chip blue">XP 60</span><span class="chip orange">Coins 100</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="60" data-coins="100">Start</button>
+                        <button class="btn" data-course-finish data-xp="60" data-coins="100" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>OSI vs. TCP/IP</li>
+                            <li>HTTP, TLS, DNS</li>
+                            <li>Routing basics</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- OS -->
+                <article class="learn-item" data-course-id="os">
+                    <h4>Operating Systems</h4>
+                    <p>Processes, threads, memory, scheduling, and filesystems.</p>
+                    <div class="meta"><span class="chip blue">XP 80</span><span class="chip orange">Coins 120</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="80" data-coins="120">Start</button>
+                        <button class="btn" data-course-finish data-xp="80" data-coins="120" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>Processes vs. threads, synchronization</li>
+                            <li>Virtual memory & paging</li>
+                            <li>Filesystem layout</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Algorithms -->
+                <article class="learn-item" data-course-id="algorithms">
+                    <h4>Algorithms & Data Structures</h4>
+                    <p>Arrays, linked lists, trees, graphs, and common algorithms.</p>
+                    <div class="meta"><span class="chip blue">XP 100</span><span class="chip orange">Coins 160</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="100" data-coins="160">Start</button>
+                        <button class="btn" data-course-finish data-xp="100" data-coins="160" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>Complexity (Big-O) overview</li>
+                            <li>Sorting & searching</li>
+                            <li>Traversal strategies</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Security -->
+                <article class="learn-item" data-course-id="security">
+                    <h4>Cybersecurity Essentials</h4>
+                    <p>Threats, secure coding, encryption basics, and best practices.</p>
+                    <div class="meta"><span class="chip blue">XP 90</span><span class="chip orange">Coins 140</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="90" data-coins="140">Start</button>
+                        <button class="btn" data-course-finish data-xp="90" data-coins="140" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>OWASP Top 10 overview</li>
+                            <li>Authentication and authorization</li>
+                            <li>Encryption and hashing basics</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Cloud -->
+                <article class="learn-item" data-course-id="cloud">
+                    <h4>Cloud Computing Basics</h4>
+                    <p>Compute, storage, databases, and cost awareness in the cloud.</p>
+                    <div class="meta"><span class="chip blue">XP 70</span><span class="chip orange">Coins 110</span></div>
+                    <div class="course-actions">
+                        <button class="btn primary" data-course-start data-xp="70" data-coins="110">Start</button>
+                        <button class="btn" data-course-finish data-xp="70" data-coins="110" style="display:none">Finish & claim</button>
+                    </div>
+                    <div class="course-content" style="display:none">
+                        <ul>
+                            <li>IaaS vs. PaaS vs. SaaS</li>
+                            <li>Resource provisioning & scaling</li>
+                            <li>Security and shared responsibility</li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+            <div class="learn-grid" data-completed-grid style="display:none"></div>
         </section>
     </main>
 
