@@ -182,8 +182,9 @@
       limitDashboardStoreItems();
     }
     if(e.key === COMPLETED_KEY || e.key === ONGOING_KEY){
-      // Refresh Dashboard materials and Learn completed grid when progress changes in another tab
+      // Refresh Dashboard materials, Topics section, and Learn completed grid when progress changes in another tab
       setupDashboardMaterials();
+      setupTopicsSection();
       populateCompletedGrid();
     }
   });
@@ -449,6 +450,63 @@
     buildGroup('Available Courses', available, 'available');
   }
 
+  // Topics section sync
+  function setupTopicsSection(){
+    const card = document.querySelector('.topics-card');
+    if(!card) return; // Only on Dashboard
+    const items = Array.from(card.querySelectorAll('[data-topic]'));
+    const completed = getCompletedCourses();
+    const ongoingList = getOngoingCourses();
+
+    items.forEach(topic => {
+      const titleEl = topic.querySelector('.topic-title');
+      const titleText = (titleEl?.textContent || '').toLowerCase();
+      let id = '';
+      if(titleText.includes('programming')) id = 'programming';
+      else if(titleText.includes('databases')) id = 'databases';
+      else if(titleText.includes('software design')) id = 'design';
+      else if(titleText.includes('it business')) id = 'business';
+
+      const btn = topic.querySelector('.topic-actions .btn');
+      const ring = topic.querySelector('[data-ring]');
+      const ringLabel = topic.querySelector('.ring-label');
+
+      if(!id){
+        if(btn && !btn.dataset.bound){
+          btn.dataset.bound = '1';
+          btn.addEventListener('click', ()=> location.assign('learn.html'));
+        }
+        return;
+      }
+
+      const isDone = completed.includes(id);
+      const isDoing = ongoingList.includes(id) && !isDone;
+
+      if(btn){
+        btn.textContent = isDone ? 'Review' : (isDoing ? 'Continue' : 'Start');
+        if(!btn.dataset.bound){
+          btn.dataset.bound = '1';
+          btn.addEventListener('click', ()=>{
+            const status = isDone ? 'completed' : (isDoing ? 'ongoing' : 'available');
+            location.assign(getCourseUrl(id, status));
+          });
+        }
+      }
+
+      if(ring){
+        const r = 52;
+        const circumference = 2 * Math.PI * r;
+        let target = parseInt(ring.getAttribute('data-progress') || '0', 10) || 0;
+        if(isDone) target = 100;
+        else if(isDoing) target = Math.max(target, 50);
+        ring.setAttribute('data-progress', String(target));
+        ring.style.strokeDasharray = String(circumference);
+        ring.style.strokeDashoffset = String(circumference * (1 - target/100));
+        if(ringLabel) ringLabel.textContent = `${target}%`;
+      }
+    });
+  }
+
   // Course page: gating tasks and rewards
   function setupCoursePage(){
     const container = document.getElementById('course-page');
@@ -591,6 +649,7 @@
   window.addEventListener('load', setupLearnCourses);
   window.addEventListener('load', setupLearnTabs);
   window.addEventListener('load', setupDashboardMaterials);
+  window.addEventListener('load', setupTopicsSection);
 })();
 
 
