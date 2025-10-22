@@ -1,6 +1,6 @@
 // TOPCIT Quest - Basic Interactivity for Prototype
 (function(){
-  const levelOrder = ["Novice","Coder","Debugger","System Architect","TOPCIT Master"];
+  const levelOrder = ["Novice","Coder","Debugger","System Architect","TOPCIT Master"]; // legacy; no longer used for labels
   const progressBar = document.querySelector('[data-progress-bar]');
   const currentLevelEl = document.querySelector('[data-current-level]');
   const nextLevelEl = document.querySelector('[data-next-level]');
@@ -13,6 +13,108 @@
   const xpTotalEl = document.querySelector('[data-xp-total]');
   const userMenuBtn = document.getElementById('user-menu-btn');
   const userDropdown = document.getElementById('user-dropdown');
+
+  // Persistent XP/Level state
+  const MAX_RANK = 50;
+  // const LEVEL_XP = 200; // legacy constant; thresholds now dynamic per rank
+  const XP_TOTAL_KEY = 'topcit_xp_total';
+  const LEVEL_IDX_KEY = 'topcit_level_idx';
+  const XP_IN_LEVEL_KEY = 'topcit_xp_in_level';
+  function getNum(key, def=0){
+    try{ const v = parseInt(localStorage.getItem(key) || ''); return isNaN(v) ? def : v; }catch(_){ return def; }
+  }
+  let xpTotal = getNum(XP_TOTAL_KEY, 0);
+  let levelIdx = getNum(LEVEL_IDX_KEY, 0); // 0-based -> Rank = levelIdx + 1
+  let xpInLevel = getNum(XP_IN_LEVEL_KEY, 0);
+  function saveProgress(){
+    try{
+      localStorage.setItem(XP_TOTAL_KEY, String(xpTotal));
+      localStorage.setItem(LEVEL_IDX_KEY, String(levelIdx));
+      localStorage.setItem(XP_IN_LEVEL_KEY, String(xpInLevel));
+    }catch(_){}
+  }
+  function requiredXpForRank(rank){
+    const r = Math.max(1, Math.min(MAX_RANK, parseInt(rank,10) || 1));
+    return 20 + (r - 1) * 200;
+  }
+  function reconcileProgressFromTotal(){
+    // Ensure levelIdx and xpInLevel align with xpTotal and dynamic thresholds
+    let remaining = xpTotal;
+    let idx = 0;
+    while(idx < MAX_RANK - 1){
+      const need = requiredXpForRank(idx + 1);
+      if(remaining >= need){ remaining -= need; idx += 1; }
+      else { break; }
+    }
+    levelIdx = idx;
+    xpInLevel = remaining;
+    saveProgress();
+  }
+  function setPercent(p){ if(progressBar){ progressBar.style.width = `${Math.max(0, Math.min(100, p))}%`; } }
+  function setLevel(idx){
+    const rank = Math.max(0, Math.min(MAX_RANK-1, idx)) + 1;
+    const threshold = requiredXpForRank(rank);
+    const percent = Math.floor((xpInLevel / threshold) * 100);
+    const remaining = Math.max(0, threshold - xpInLevel);
+    if(currentLevelEl){ currentLevelEl.textContent = `${xpInLevel} / ${threshold}`; }
+    if(nextLevelEl){ nextLevelEl.textContent = `${remaining}`; }
+    setPercent(percent);
+  }
+  // Initialize UI from saved state (Rank baseline)
+  reconcileProgressFromTotal();
+  setLevel(levelIdx);
+  if(xpTotalEl){ xpTotalEl.textContent = xpTotal.toLocaleString(); }
+
+  function resetProgressToNovice(){
+    xpTotal = 0; xpInLevel = 0; levelIdx = 0; saveProgress();
+    setLevel(0);
+    if(xpTotalEl){ xpTotalEl.textContent = '0'; }
+  }
+  const RESET_BASELINE_KEY = 'topcit_reset_baseline';
+  try{
+    if(localStorage.getItem(RESET_BASELINE_KEY) !== '1'){
+      resetProgressToNovice();
+      localStorage.setItem(RESET_BASELINE_KEY, '1');
+    }
+  }catch(_){}
+
+  // XP gain with dynamic thresholds per rank
+  function addXp(amount){
+    const inc = Math.max(1, Math.min(500, amount));
+    const currentDisplay = parseInt((xpTotalEl?.textContent || '0').replace(/,/g,''),10) || 0;
+    xpTotal += inc;
+    xpInLevel += inc;
+    let didLevel = false;
+    let rank = levelIdx + 1;
+    let threshold = requiredXpForRank(rank);
+    while(xpInLevel >= threshold && levelIdx < MAX_RANK - 1){
+      xpInLevel -= threshold;
+      levelIdx += 1;
+      rank = levelIdx + 1;
+      threshold = requiredXpForRank(rank);
+      setLevel(levelIdx);
+      didLevel = true;
+    }
+    setLevel(levelIdx); // refresh percent based on dynamic threshold
+    if(gainedXpEl){ gainedXpEl.textContent = `+${inc}`; }
+    if(xpTotalEl){ animateNumber(xpTotalEl, currentDisplay, xpTotal, 600); }
+    saveProgress();
+    if(didLevel){
+      showToast(`Rank up! You are now Rank ${rank}.`, 'success');
+      showRankUp(`Rank ${rank}`);
+    }
+  }
+
+  function animateNumber(el, from, to, duration){
+    const start = performance.now();
+    function tick(now){
+      const p = Math.min(1, (now - start) / duration);
+      const value = Math.round(from + (to - from) * p);
+      el.textContent = value.toLocaleString();
+      if(p < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  }
 
   // Utility: show toast
   function showToast(message, type = 'success'){
@@ -62,28 +164,39 @@
     return Math.max(0, levelOrder.indexOf(txt));
   }
   function setLevel(idx){
-    if(currentLevelEl){ currentLevelEl.textContent = levelOrder[idx]; }
-    if(nextLevelEl){ nextLevelEl.textContent = levelOrder[Math.min(levelOrder.length-1, idx+1)]; }
+    const MAX_RANK = 50; // ensure availability in this scope
+    const rank = Math.max(0, Math.min(MAX_RANK-1, idx)) + 1;
+    const threshold = requiredXpForRank(rank);
+    const percent = Math.floor((xpInLevel / threshold) * 100);
+    const remaining = Math.max(0, threshold - xpInLevel);
+    if(currentLevelEl){ currentLevelEl.textContent = `${xpInLevel} / ${threshold}`; }
+    if(nextLevelEl){ nextLevelEl.textContent = `${remaining}`; }
+    setPercent(percent);
   }
 
   function addXp(amount){
-    const inc = Math.max(10, Math.min(200, amount));
-    const start = parsePercent();
-    let target = start + Math.floor(inc/2); // map XP to percent loosely
-    let levelIdx = getLevelIndex();
-    if(target >= 100){
-      levelIdx = Math.min(levelOrder.length-1, levelIdx + 1);
-      target = target - 100;
+    const inc = Math.max(1, Math.min(500, amount));
+    const currentDisplay = parseInt((xpTotalEl?.textContent || '0').replace(/,/g,''),10) || 0;
+    xpTotal += inc;
+    xpInLevel += inc;
+    let didLevel = false;
+    let rank = levelIdx + 1;
+    let threshold = requiredXpForRank(rank);
+    while(xpInLevel >= threshold && levelIdx < MAX_RANK - 1){
+      xpInLevel -= threshold;
+      levelIdx += 1;
+      rank = levelIdx + 1;
+      threshold = requiredXpForRank(rank);
       setLevel(levelIdx);
-      showToast(`Level up! You are now ${levelOrder[levelIdx]}.`, 'success');
+      didLevel = true;
     }
-    setPercent(target);
+    setLevel(levelIdx);
     if(gainedXpEl){ gainedXpEl.textContent = `+${inc}`; }
-    // increment XP total counter visually
-    if(xpTotalEl){
-      const current = parseInt(xpTotalEl.textContent.replace(/,/g,''),10) || 0;
-      const end = current + inc * 10; // loose mapping XP points
-      animateNumber(xpTotalEl, current, end, 600);
+    if(xpTotalEl){ animateNumber(xpTotalEl, currentDisplay, xpTotal, 600); }
+    saveProgress();
+    if(didLevel){
+      showToast(`Rank up! You are now Rank ${rank}.`, 'success');
+      showRankUp(`Rank ${rank}`);
     }
   }
 
@@ -307,7 +420,7 @@
           }
           const xp = parseInt(startBtn.getAttribute('data-xp') || '0', 10) || 0;
           const coins = parseInt(startBtn.getAttribute('data-coins') || '0', 10) || 0;
-          const url = new URL('course.html', location.origin);
+          const url = new URL('course.html', location.href);
           url.searchParams.set('course', id);
           url.searchParams.set('xp', String(xp));
           url.searchParams.set('coins', String(coins));
@@ -356,7 +469,7 @@
           startBtn.removeAttribute('data-coins');
           startBtn.dataset.bound = '1';
           startBtn.addEventListener('click', ()=>{
-            const url = new URL('course.html', location.origin);
+            const url = new URL('course.html', location.href);
             url.searchParams.set('course', id);
             url.searchParams.set('xp', '0');
             url.searchParams.set('coins', '0');
@@ -795,7 +908,7 @@ function openProfileModal(){
 function setupProfileModal(){
   buildProfileModal();
   applyHeaderAvatar(readProfile());
-  // Bind Profile trigger from user menu
+  // Bind Profile toggle from user menu
   const dropdown = document.getElementById('user-dropdown');
   if(dropdown){
     const items = Array.from(dropdown.querySelectorAll('.menu-item'));
@@ -814,5 +927,46 @@ window.addEventListener('load', setupLearnTabs);
 window.addEventListener('load', setupDashboardMaterials);
 window.addEventListener('load', setupTopicsSection);
 })();
+
+
+
+// Rank-up popup animation
+function showRankUp(newLevel){
+  const backdrop = document.createElement('div');
+  backdrop.className = 'rankup-backdrop';
+  const pop = document.createElement('div');
+  pop.className = 'rankup-pop';
+  pop.innerHTML = `
+    <div class="rankup-ring"></div>
+    <div class="rankup-title">Rank Up!</div>
+    <div class="rankup-level">${newLevel}</div>
+    <div class="shine"></div>
+    <button class="btn primary rankup-close">Continue</button>`;
+  backdrop.appendChild(pop);
+  document.body.appendChild(backdrop);
+
+  // Confetti burst
+  const PIECES = 28;
+  for(let i=0;i<PIECES;i++){
+    const c = document.createElement('span');
+    c.className = 'confetti';
+    const hue = Math.floor(20 + Math.random()*320);
+    const x = Math.floor(-120 + Math.random()*480);
+    const drift = Math.floor(-40 + Math.random()*80);
+    const delay = (Math.random()*0.2).toFixed(2)+'s';
+    const dur = (1.6 + Math.random()*1.2).toFixed(2)+'s';
+    c.style.setProperty('--hue', hue);
+    c.style.setProperty('--x', x+'px');
+    c.style.setProperty('--drift', drift+'px');
+    c.style.setProperty('--delay', delay);
+    c.style.setProperty('--dur', dur);
+    backdrop.appendChild(c);
+  }
+
+  requestAnimationFrame(()=> backdrop.classList.add('open'));
+  function close(){ backdrop.classList.remove('open'); setTimeout(()=>backdrop.remove(),250); }
+  backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop || e.target.classList.contains('rankup-close')) close(); });
+  setTimeout(close, 3500);
+}
 
 
