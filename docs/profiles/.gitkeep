@@ -1,0 +1,1 @@
+Profiles folder placeholder. User avatars are currently stored in localStorage for browser persistence. Server-side saving can write files here.

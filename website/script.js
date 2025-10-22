@@ -641,16 +641,178 @@
     });
   }
   }
-  window.addEventListener('load', loadWallet);
-  window.addEventListener('load', setupCoursePage);
-  window.addEventListener('load', revealCharts);
-  window.addEventListener('load', animateRings);
-  window.addEventListener('load', filterAffordableStoreItems);
-  window.addEventListener('load', () => limitDashboardStoreItems());
-  window.addEventListener('load', setupLearnCourses);
-  window.addEventListener('load', setupLearnTabs);
-  window.addEventListener('load', setupDashboardMaterials);
-  window.addEventListener('load', setupTopicsSection);
+
+
+
+
+// Profile modal persistence and UI
+const PROFILE_KEY = 'topcit_user_profile';
+function readProfile(){
+  try{ const raw = localStorage.getItem(PROFILE_KEY); return raw ? JSON.parse(raw) : {}; }catch(_){ return {}; }
+}
+function writeProfile(p){
+  try{ localStorage.setItem(PROFILE_KEY, JSON.stringify(p||{})); }catch(_){}
+}
+function applyHeaderAvatar(profile){
+  const btn = document.getElementById('user-menu-btn');
+  const avatarEl = btn ? btn.querySelector('.avatar') : null;
+  if(!avatarEl) return;
+  const hasImg = !!profile?.avatar;
+  if(hasImg){
+    const img = document.createElement('img');
+    img.alt = 'Profile avatar';
+    img.src = profile.avatar;
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    avatarEl.textContent = '';
+    avatarEl.innerHTML = '';
+    avatarEl.appendChild(img);
+  }
+}
+function buildProfileModal(){
+  if(document.getElementById('profile-modal')) return; // already built
+  const backdrop = document.createElement('div');
+  backdrop.className = 'profile-modal-backdrop';
+  backdrop.id = 'profile-backdrop';
+  const modal = document.createElement('div');
+  modal.className = 'profile-modal';
+  modal.id = 'profile-modal';
+  modal.innerHTML = `
+    <div class="head">
+      <h3>Profile</h3>
+      <button class="icon-btn" id="profile-close" aria-label="Close"><span class="ms">close</span></button>
+    </div>
+    <div class="body">
+      <form class="profile-form" id="profile-form">
+        <div class="field span-2 avatar-preview">
+          <div class="pic" id="profile-avatar-preview"><span class="ms">account_circle</span></div>
+          <div>
+            <label for="profile-avatar">Profile Picture</label>
+            <input type="file" id="profile-avatar" accept="image/*">
+            <small class="muted">Stored locally; persists in this browser.</small>
+          </div>
+        </div>
+        <div class="field">
+          <label for="profile-name">Name</label>
+          <input type="text" id="profile-name" placeholder="Your name">
+        </div>
+        <div class="field">
+          <label for="profile-email">Email</label>
+          <input type="email" id="profile-email" placeholder="name@example.com">
+        </div>
+        <div class="field span-2">
+          <label for="profile-phone">Phone Number</label>
+          <input type="tel" id="profile-phone" placeholder="e.g. +63 912 345 6789">
+        </div>
+      </form>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="label">Wallet</div><div class="value" id="profile-wallet">0</div></div>
+        <div class="profile-stat"><div class="label">XP Total</div><div class="value" id="profile-xp">0</div></div>
+        <div class="profile-stat"><div class="label">Completed</div><div class="value" id="profile-completed-count">0</div></div>
+      </div>
+      <div class="completed-topics">
+        <h4>Completed Topics</h4>
+        <ul id="profile-completed-list"></ul>
+      </div>
+    </div>
+    <div class="footer">
+      <button class="btn ghost" id="profile-cancel">Cancel</button>
+      <button class="btn primary" id="profile-save">Save Changes</button>
+    </div>
+  `;
+  document.body.appendChild(backdrop);
+  document.body.appendChild(modal);
+  // Bind close/backdrop
+  function close(){ backdrop.classList.remove('open'); modal.classList.remove('open'); }
+  backdrop.addEventListener('click', close);
+  modal.querySelector('#profile-close')?.addEventListener('click', close);
+  modal.querySelector('#profile-cancel')?.addEventListener('click', (e)=>{ e.preventDefault(); close(); });
+  // File input preview
+  const fileInput = modal.querySelector('#profile-avatar');
+  const preview = modal.querySelector('#profile-avatar-preview');
+  fileInput?.addEventListener('change', ()=>{
+    const f = fileInput.files?.[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      const url = String(reader.result||'');
+      preview.innerHTML = `<img alt="avatar" src="${url}">`;
+      const p = readProfile();
+      p.avatar = url;
+      writeProfile(p);
+      applyHeaderAvatar(p);
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function openProfileModal(){
+  buildProfileModal();
+  const backdrop = document.getElementById('profile-backdrop');
+  const modal = document.getElementById('profile-modal');
+  if(!backdrop || !modal) return;
+  // Populate fields
+  const p = readProfile();
+  const nameEl = modal.querySelector('#profile-name');
+  const emailEl = modal.querySelector('#profile-email');
+  const phoneEl = modal.querySelector('#profile-phone');
+  const preview = modal.querySelector('#profile-avatar-preview');
+  if(nameEl) nameEl.value = p.name || '';
+  if(emailEl) emailEl.value = p.email || '';
+  if(phoneEl) phoneEl.value = p.phone || '';
+  preview.innerHTML = p.avatar ? `<img alt="avatar" src="${p.avatar}">` : '<span class="ms">account_circle</span>';
+  // Stats
+  const walletEl = modal.querySelector('#profile-wallet');
+  const xpEl = modal.querySelector('#profile-xp');
+  const countEl = modal.querySelector('#profile-completed-count');
+  const listEl = modal.querySelector('#profile-completed-list');
+  const completed = getCompletedCourses();
+  if(walletEl) walletEl.textContent = String(getWallet().toLocaleString());
+  const xpDom = document.querySelector('[data-xp-total]');
+  const xpVal = xpDom ? parseInt(xpDom.textContent.replace(/,/g,''),10)||0 : 0;
+  if(xpEl) xpEl.textContent = xpVal.toLocaleString();
+  if(countEl) countEl.textContent = String(completed.length);
+  if(listEl){
+    listEl.innerHTML = completed.map(id=>`<li>${getCourseTitle(id)}</li>`).join('');
+  }
+  // Save changes
+  modal.querySelector('#profile-save')?.addEventListener('click', (e)=>{
+    e.preventDefault();
+    const next = { name: nameEl?.value||'', email: emailEl?.value||'', phone: phoneEl?.value||'', avatar: readProfile().avatar };
+    writeProfile(next);
+    showToast('Profile saved.', 'success');
+    // reflect name under XP card if present
+    const whoName = document.querySelector('.xp-stats .who .name');
+    if(whoName && next.name) whoName.textContent = next.name;
+    openProfileModal.close?.();
+    const backdrop = document.getElementById('profile-backdrop');
+    const modal = document.getElementById('profile-modal');
+    if(backdrop && modal){ backdrop.classList.remove('open'); modal.classList.remove('open'); }
+  });
+  backdrop.classList.add('open');
+  modal.classList.add('open');
+}
+function setupProfileModal(){
+  buildProfileModal();
+  applyHeaderAvatar(readProfile());
+  // Bind Profile trigger from user menu
+  const dropdown = document.getElementById('user-dropdown');
+  if(dropdown){
+    const items = Array.from(dropdown.querySelectorAll('.menu-item'));
+    const profileBtn = items.find(b => (b.textContent||'').toLowerCase().includes('profile'));
+    profileBtn?.addEventListener('click', openProfileModal);
+  }
+}
+window.addEventListener('load', setupProfileModal);
+window.addEventListener('load', setupCoursePage);
+window.addEventListener('load', revealCharts);
+window.addEventListener('load', animateRings);
+window.addEventListener('load', filterAffordableStoreItems);
+window.addEventListener('load', () => limitDashboardStoreItems());
+window.addEventListener('load', setupLearnCourses);
+window.addEventListener('load', setupLearnTabs);
+window.addEventListener('load', setupDashboardMaterials);
+window.addEventListener('load', setupTopicsSection);
 })();
 
 
