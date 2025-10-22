@@ -152,7 +152,8 @@
     const r = getCourseRewards(id);
     const xp = status === 'completed' ? 0 : r.xp;
     const coins = status === 'completed' ? 0 : r.coins;
-    const url = new URL('course.html', location.origin);
+    // Use href so URLs stay repo-relative on GitHub Pages (e.g., /repo/course.html)
+    const url = new URL('course.html', location.href);
     url.searchParams.set('course', id);
     url.searchParams.set('xp', String(xp));
     url.searchParams.set('coins', String(coins));

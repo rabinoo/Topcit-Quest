@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TOPCIT Quest • Rewards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="rewards.css" />
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand">
+                <div class="logo"><img class="logo-img" src="topcit-quest-logo.svg" alt="TOPCIT Quest logo"></div>
+                <div class="titles">
+                    <h1>TOPCIT Quest</h1>
+                    <p class="subtitle">Master IT through daily practice and rewards</p>
+                </div>
+            </div>
+            <nav class="main-nav" aria-label="Primary">
+                <a class="tab" href="index.html" title="Dashboard">📊 <span>Dashboard</span></a>
+                <a class="tab" href="learn.html" title="Learn">📘 <span>Learn</span></a>
+                <a class="tab" href="leaderboards.html" title="Leaderboards">🏆 <span>Leaderboards</span></a>
+                <a class="tab active" href="rewards.html" title="Rewards">🎁 <span>Rewards</span></a>
+            </nav>
+            <nav class="header-controls" aria-label="User controls">
+                <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim">🔥</span><span class="streak-num">7</span><span>day streak</span></div>
+                <button class="icon-btn" id="notify-btn" aria-label="Notifications">🔔<span class="dot-badge" aria-hidden="true"></span></button>
+                <div class="wallet chip" title="Your coins"><span class="coin-icon">🪙</span><span class="amount" data-wallet-amount>1,260</span></div>
+                <div class="user-menu">
+                    <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false">
+                        <span class="avatar">👩‍💻</span>
+                    </button>
+                    <div class="menu" id="user-dropdown" role="menu" aria-hidden="true">
+                        <button class="menu-item" role="menuitem">Profile</button>
+                        <button class="menu-item" role="menuitem">Settings</button>
+                        <button class="menu-item danger" role="menuitem" id="logout-btn">Log out</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card rewards-card">
+            <div class="card-head">
+                <h3>Rewards Store</h3>
+                <span class="chip subtle">Redeem your coins</span>
+            </div>
+            <div class="rewards-grid">
+                <div class="reward-item" data-redeem data-cost="1500">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/tryhackme_logo_full.svg" alt="TryHackMe logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>TryHackMe Premium</h4>
+                        <p>Interactive cybersecurity labs and guided learning paths with premium rooms.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 1,500</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="1500">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="1500">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/mega-menu-logo-htb.svg" alt="Hack The Box logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Hack The Box VIP</h4>
+                        <p>Advanced pentesting labs, VIP challenges, and exclusive content for red teamers.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 1,500</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="1500">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="650">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/1725820354spotify-logo-png.webp" alt="Spotify logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Spotify Premium</h4>
+                        <p>Ad‑free music, offline downloads, and unlimited skips across all devices.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 650</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="650">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="750">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/youtube-vector-logo-png-9.webp" alt="YouTube logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>YouTube Premium</h4>
+                        <p>Ad‑free videos, background play, YouTube Music, and offline downloads.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 750</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="750">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="10000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/jetbrains-logo-png_seeklogo-300262.webp" alt="JetBrains logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>JetBrains All Products Pack</h4>
+                        <p>Complete suite of JetBrains IDEs and tools for professional development.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 10,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="10000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/photoshop-56.svg" alt="Adobe Photoshop logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Photoshop License</h4>
+                        <p>Industry‑standard photo editing, compositing, and retouching tools.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/premiere-pro-40.svg" alt="Adobe Premiere Pro logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Premiere License</h4>
+                        <p>Professional video editing software for timelines, color, and audio mixing.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/illustrator.svg" alt="Adobe Illustrator logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Illustrator License</h4>
+                        <p>Vector design and illustration tools for logos, icons, and artwork.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="3000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/after-effects.svg" alt="Adobe After Effects logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe After Effects License</h4>
+                        <p>Motion graphics and visual effects for cinematic titles and composites.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 3,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="3000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="2000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/leetcode.svg" alt="LeetCode logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>LeetCode Premium</h4>
+                        <p>Company‑tagged questions, detailed solutions, and mock interviews.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 2,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="2000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="6000">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/adobe-creative-cloud.svg" alt="Adobe Creative Cloud logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Adobe Creative Cloud</h4>
+                        <p>Access to Adobe apps including Photoshop, Illustrator, Premiere, and more.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 6,000</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="6000">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="500">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/canva.svg" alt="Canva logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Canva Pro</h4>
+                        <p>Premium templates, brand kit, background remover, and collaboration tools.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 500</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="500">Redeem</button>
+                </div>
+                <div class="reward-item" data-redeem data-cost="400">
+                    <div class="reward-icon"><img class="reward-logo" src="rewards icon/grammarly.svg" alt="Grammarly logo" loading="lazy"></div>
+                    <div class="reward-details">
+                        <h4>Grammarly Premium</h4>
+                        <p>Advanced grammar, clarity, tone suggestions, and plagiarism detection.</p>
+                        <div class="reward-cost"><span class="coin">🪙</span> 400</div>
+                    </div>
+                    <button class="btn primary redeem-btn" data-cost="400">Redeem</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <div>© 2025 TOPCIT Quest • Study smart, every day</div>
+    </footer>
+    <div class="toast-container" id="toast-container"></div>
+</body>
+</html>
+
+

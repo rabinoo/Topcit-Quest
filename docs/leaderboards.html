@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TOPCIT Quest • Leaderboards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="leaderboards.css" />
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand">
+                <div class="logo"><img class="logo-img" src="topcit-quest-logo.svg" alt="TOPCIT Quest logo"></div>
+                <div class="titles">
+                    <h1>TOPCIT Quest</h1>
+                    <p class="subtitle">Master IT through daily practice and rewards</p>
+                </div>
+            </div>
+            <nav class="main-nav" aria-label="Primary">
+                <a class="tab" href="index.html" title="Dashboard">📊 <span>Dashboard</span></a>
+                <a class="tab" href="learn.html" title="Learn">📘 <span>Learn</span></a>
+                <a class="tab active" href="leaderboards.html" title="Leaderboards">🏆 <span>Leaderboards</span></a>
+                <a class="tab" href="rewards.html" title="Rewards">🎁 <span>Rewards</span></a>
+            </nav>
+            <nav class="header-controls" aria-label="User controls">
+                <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim">🔥</span><span class="streak-num">7</span><span>day streak</span></div>
+                <button class="icon-btn" id="notify-btn" aria-label="Notifications">🔔<span class="dot-badge" aria-hidden="true"></span></button>
+                <div class="wallet chip" title="Your coins"><span class="coin-icon">🪙</span><span class="amount" data-wallet-amount>1,260</span></div>
+                <div class="user-menu">
+                    <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false">
+                        <span class="avatar">👩‍💻</span>
+                    </button>
+                    <div class="menu" id="user-dropdown" role="menu" aria-hidden="true">
+                        <button class="menu-item" role="menuitem">Profile</button>
+                        <button class="menu-item" role="menuitem">Settings</button>
+                        <button class="menu-item danger" role="menuitem" id="logout-btn">Log out</button>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="card leaderboard-card">
+            <div class="card-head">
+                <h3>Leaderboards</h3>
+                <span class="chip subtle">Top performers</span>
+            </div>
+
+            <!-- Top 1 Container -->
+            <div class="leaderboard-top1">
+                <div class="top-player top1">
+                    <div class="rank-medal">
+                        <span class="rank">1</span>
+                        <span class="medal">🥇</span>
+                    </div>
+                    <div class="player-info">
+                        <span class="pic">🦊</span>
+                        <span class="user">Aarav</span>
+                    </div>
+                    <div class="player-stats">
+                        <span class="score">2,340 XP</span>
+                        <span class="streak">15</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top 2-5 Container -->
+            <div class="leaderboard-top25">
+                <div class="top-player top2">
+                    <div class="rank-medal">
+                        <span class="rank">2</span>
+                        <span class="medal">🥈</span>
+                    </div>
+                    <div class="player-info">
+                        <span class="pic">🐼</span>
+                        <span class="user">Mina</span>
+                    </div>
+                    <div class="player-stats">
+                        <span class="score">2,120 XP</span>
+                        <span class="streak">12</span>
+                    </div>
+                </div>
+                <div class="top-player top3">
+                    <div class="rank-medal">
+                        <span class="rank">3</span>
+                        <span class="medal">🥉</span>
+                    </div>
+                    <div class="player-info">
+                        <span class="pic">🦁</span>
+                        <span class="user">Jae</span>
+                    </div>
+                    <div class="player-stats">
+                        <span class="score">1,980 XP</span>
+                        <span class="streak">10</span>
+                    </div>
+                </div>
+                <div class="top-player">
+                    <div class="rank-medal">
+                        <span class="rank">4</span>
+                    </div>
+                    <div class="player-info">
+                        <span class="pic">🐨</span>
+                        <span class="user">Linh</span>
+                    </div>
+                    <div class="player-stats">
+                        <span class="score">1,760 XP</span>
+                        <span class="streak">8</span>
+                    </div>
+                </div>
+                <div class="top-player">
+                    <div class="rank-medal">
+                        <span class="rank">5</span>
+                    </div>
+                    <div class="player-info">
+                        <span class="pic">🐧</span>
+                        <span class="user">Noah</span>
+                    </div>
+                    <div class="player-stats">
+                        <span class="score">1,620 XP</span>
+                        <span class="streak">7</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rest of Players Container -->
+            <div class="leaderboard-rest">
+                <div class="player-row">
+                    <span class="rank">6</span>
+                    <span class="pic">🦄</span>
+                    <span class="user">Sara</span>
+                    <span class="score">1,510 XP</span>
+                    <span class="streak">6</span>
+                </div>
+                <div class="player-row">
+                    <span class="rank">7</span>
+                    <span class="pic">🐯</span>
+                    <span class="user">Dae</span>
+                    <span class="score">1,390 XP</span>
+                    <span class="streak">5</span>
+                </div>
+                <div class="player-row">
+                    <span class="rank">8</span>
+                    <span class="pic">🐸</span>
+                    <span class="user">Nikhil</span>
+                    <span class="score">1,280 XP</span>
+                    <span class="streak">4</span>
+                </div>
+                <div class="player-row">
+                    <span class="rank">9</span>
+                    <span class="pic">🦔</span>
+                    <span class="user">Emma</span>
+                    <span class="score">1,150 XP</span>
+                    <span class="streak">3</span>
+                </div>
+                <div class="player-row">
+                    <span class="rank">10</span>
+                    <span class="pic">🦉</span>
+                    <span class="user">Yuna</span>
+                    <span class="score">1,030 XP</span>
+                    <span class="streak">2</span>
+                </div>
+                <!-- Add more rows up to 50, but for brevity, stopping at 10 -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <div>© 2025 TOPCIT Quest • Study smart, every day</div>
+    </footer>
+    <div class="toast-container" id="toast-container"></div>
+</body>
+
+
+
