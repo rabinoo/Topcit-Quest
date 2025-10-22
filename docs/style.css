@@ -223,6 +223,13 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .topic .topic-body{flex:1}
 .topic-title{font-weight:800}
 .icon-badge{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,rgba(0,123,255,.15),rgba(244,162,97,.15));margin-right:6px}
+
+/* Icon utilities for Material Symbols */
+.ms{ font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal; font-size: 1em; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-flex; align-items: center; justify-content: center; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; }
+.icon-inline{ display: inline-flex; align-items: center; gap: 6px; }
+.icon-badge.ms{ font-size: 1.1rem; }
+.reward-logo{ object-fit: contain; }
+
 .topic-desc{color:var(--muted);font-size:13px;margin:4px 0 8px}
 .topic-actions{display:flex;gap:8px}
 

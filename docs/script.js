@@ -420,8 +420,8 @@
         ids.forEach(id => {
           const li = document.createElement('li');
           const icon = document.createElement('span');
-          icon.className = 'icon';
-          icon.textContent = status === 'completed' ? '✅' : status === 'ongoing' ? '⏳' : '📘';
+          icon.className = 'icon ms';
+          icon.textContent = status === 'completed' ? 'check_circle' : status === 'ongoing' ? 'schedule' : 'menu_book';
           const a = document.createElement('a');
           a.href = getCourseUrl(id, status);
           a.textContent = getCourseTitle(id);
