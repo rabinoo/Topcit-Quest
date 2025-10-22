@@ -74,6 +74,27 @@
           <input type="text" class="text-input" data-reflection-input />
         </div>
 
+        <!-- Capture the Flag (optional per course) -->
+        <div class="task" data-ctf-block style="display:none">
+          <h4>Capture the Flag</h4>
+          <p data-ctf-prompt>Find the flag based on the challenge.</p>
+          <input type="text" class="text-input" placeholder="Enter flag here" data-ctf-input />
+          <button class="btn small" data-ctf-check>Submit flag</button>
+          <div class="meta" data-ctf-status>Enter the correct flag to proceed.</div>
+        </div>
+
+        <!-- Fill in the Code (optional per course) -->
+        <div class="task" data-codefill-block style="display:none">
+          <h4>Fill in the Code</h4>
+          <p>Complete the missing part of the code:</p>
+          <pre class="snippet"><code data-codefill-snippet>// snippet
+// Replace the TODO with the correct code
+</code></pre>
+          <input type="text" class="text-input" placeholder="Enter missing code" data-codefill-input />
+          <button class="btn small" data-codefill-check>Check code</button>
+          <div class="meta" data-codefill-status>Provide the correct snippet to proceed.</div>
+        </div>
+
         <div class="actions">
           <a href="learn.html" class="btn ghost">Back</a>
           <button class="btn primary" data-course-finish disabled>Finish & claim</button>

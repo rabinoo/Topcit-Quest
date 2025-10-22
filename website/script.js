@@ -680,6 +680,18 @@
         quiz: { question: 'SaaS means:', options: ['Hosted software', 'Virtual machines', 'Object storage'], correctIndex: 0 },
         bullets: ['IaaS/PaaS/SaaS', 'Provisioning & scaling', 'Shared responsibility'],
         reflection: 'Explain the shared responsibility model briefly.'
+      },
+      ctf: { title: 'Web Security CTF',
+        quiz: null,
+        bullets: null,
+        reflection: null,
+        ctf: { prompt: 'Recover the flag (format TOPCIT{...}).', flag: 'TOPCIT{layered_security}' }
+      },
+      codefill: { title: 'Code Completion Challenge',
+        quiz: null,
+        bullets: null,
+        reflection: null,
+        codeFill: { snippet: 'function sum(arr) {\n  // TODO\n}\n// Expect: sum([1,2,3]) === 6', answer: 'arr.reduce((a,b)=>a+b,0)' }
       }
     };
     const meta = COURSE_META[id] || { title: 'Course', quiz: { question: 'Quick check:', options: ['A','B','C'], correctIndex: 0 }, bullets: ['Read the material'], reflection: 'Write a brief reflection.' };
@@ -692,50 +704,111 @@
     if(xpEl) xpEl.textContent = `XP ${xp}`;
     if(coinsEl) coinsEl.textContent = `Coins ${coins}`;
   
-    // Build tasks content
+    // Build tasks content (optional tasks supported)
     const bulletsEl = container.querySelector('[data-task-read-list]');
-    if(bulletsEl){ bulletsEl.innerHTML = meta.bullets.map(b=>`<li>${b}</li>`).join(''); }
+    const readTask = bulletsEl ? bulletsEl.closest('.task') : null;
+    const needRead = Array.isArray(meta.bullets) && meta.bullets.length > 0;
+    if(needRead && bulletsEl){ bulletsEl.innerHTML = meta.bullets.map(b=>`<li>${b}</li>`).join(''); } else if(readTask){ readTask.style.display = 'none'; }
+
     const quizQEl = container.querySelector('[data-quiz-question]');
     const quizOptsEl = container.querySelector('[data-quiz-options]');
-    if(quizQEl) quizQEl.textContent = meta.quiz.question;
-    if(quizOptsEl){
-      quizOptsEl.innerHTML = meta.quiz.options.map((opt, i)=>`<label><input type="radio" name="quiz" value="${i}"> ${opt}</label>`).join('');
-    }
+    const quizTask = quizOptsEl ? quizOptsEl.closest('.task') : (quizQEl ? quizQEl.closest('.task') : null);
+    const needQuiz = !!(meta.quiz && Array.isArray(meta.quiz.options));
+    if(needQuiz){
+      if(quizQEl) quizQEl.textContent = meta.quiz.question;
+      if(quizOptsEl){
+        quizOptsEl.innerHTML = meta.quiz.options.map((opt, i)=>`<label><input type="radio" name="quiz" value="${i}"> ${opt}</label>`).join('');
+      }
+    } else if(quizTask){ quizTask.style.display = 'none'; }
+
     const reflectInput = container.querySelector('[data-reflection-input]');
-    if(reflectInput && meta.reflection){ reflectInput.setAttribute('placeholder', meta.reflection); }
-  
+    const reflectTask = reflectInput ? reflectInput.closest('.task') : null;
+    const needRefl = !!meta.reflection;
+    if(reflectInput && needRefl){ reflectInput.setAttribute('placeholder', meta.reflection); }
+    if(reflectTask && !needRefl){ reflectTask.style.display = 'none'; }
+
     // State & gating
-    let readDone = false, quizDone = false, reflectDone = false;
-    const finishBtn = container.querySelector('[data-course-finish]');
+    let readDone = !needRead, quizDone = !needQuiz, reflectDone = !needRefl;
+    let ctfDone = !meta.ctf, codeDone = !meta.codeFill;
+  const finishBtn = container.querySelector('[data-course-finish]');
   const readBtn = container.querySelector('[data-mark-read]');
   const completionView = container.querySelector('[data-completion]');
+  const ctfBlock = container.querySelector('[data-ctf-block]');
+  const codeBlock = container.querySelector('[data-codefill-block]');
   function updateFinish(){
     if(!finishBtn) return;
-    const disabled = !(readDone && quizDone && reflectDone);
-    // Reflect real disabled state; only enable when all tasks complete
+    const disabled = !(readDone && quizDone && reflectDone && ctfDone && codeDone);
     finishBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
     finishBtn.classList.toggle('is-disabled', disabled);
     finishBtn.toggleAttribute('disabled', disabled);
   }
   function indicateMissing(){
     const tasks = [];
-    if(!readDone){ tasks.push(container.querySelector('.task:nth-of-type(1)')); }
-    if(!quizDone){ tasks.push(container.querySelector('.task:nth-of-type(2)')); }
-    if(!reflectDone){ tasks.push(container.querySelector('.task:nth-of-type(3)')); }
-    tasks.forEach(t=>{ if(t){ t.classList.add('needs-action'); setTimeout(()=>t.classList.remove('needs-action'), 900); } });
-    const missing = [!readDone && 'Read', !quizDone && 'Quiz', !reflectDone && 'Reflection'].filter(Boolean).join(', ');
-    showToast(`Please complete: ${missing}.`, 'error');
+    const names = [];
+    if(!readDone && needRead){ tasks.push(container.querySelector('[data-task-read-list]')?.closest('.task')); names.push('Read'); }
+    if(!quizDone && needQuiz){ tasks.push(container.querySelector('[data-quiz-options]')?.closest('.task')); names.push('Quiz'); }
+    if(!reflectDone && needRefl){ tasks.push(container.querySelector('[data-reflection-input]')?.closest('.task')); names.push('Reflection'); }
+    if(!ctfDone && meta.ctf){ tasks.push(ctfBlock); names.push('Capture the Flag'); }
+    if(!codeDone && meta.codeFill){ tasks.push(codeBlock); names.push('Fill in the Code'); }
+    tasks.filter(Boolean).forEach(t=>{ t.classList.add('needs-action'); setTimeout(()=>t.classList.remove('needs-action'), 900); });
     const first = tasks.find(Boolean);
     if(first){ first.scrollIntoView({behavior:'smooth', block:'center'}); }
+    if(names.length){ showToast(`Please complete: ${names.join(', ')}.`, 'error'); }
   }
-  if(readBtn){ readBtn.addEventListener('click', ()=>{ readDone = true; container.querySelector('[data-read-status]').textContent = 'Marked as read ✓'; readBtn.disabled = true; updateFinish(); }); }
-  if(quizOptsEl){ quizOptsEl.addEventListener('change', (e)=>{ const sel = container.querySelector('input[name="quiz"]:checked'); quizDone = !!sel && parseInt(sel.value,10) === meta.quiz.correctIndex; updateFinish(); }); }
-  if(reflectInput){ reflectInput.addEventListener('input', ()=>{ reflectDone = (reflectInput.value.trim().length >= 20); updateFinish(); }); }
+  if(readBtn && needRead){ readBtn.addEventListener('click', ()=>{ readDone = true; container.querySelector('[data-read-status]').textContent = 'Marked as read ✓'; readBtn.disabled = true; updateFinish(); }); }
+  if(quizOptsEl && needQuiz){ quizOptsEl.addEventListener('change', ()=>{ const sel = container.querySelector('input[name="quiz"]:checked'); quizDone = !!sel && parseInt(sel.value,10) === meta.quiz.correctIndex; updateFinish(); }); }
+  if(reflectInput && needRefl){ reflectInput.addEventListener('input', ()=>{ reflectDone = (reflectInput.value.trim().length >= 20); updateFinish(); }); }
+  
+  // CTF task wiring
+  if(meta.ctf && ctfBlock){
+    ctfBlock.style.display = '';
+    const pEl = ctfBlock.querySelector('[data-ctf-prompt]');
+    const inp = ctfBlock.querySelector('[data-ctf-input]');
+    const chk = ctfBlock.querySelector('[data-ctf-check]');
+    const status = ctfBlock.querySelector('[data-ctf-status]');
+    if(pEl) pEl.textContent = meta.ctf.prompt;
+    chk?.addEventListener('click', ()=>{
+      const val = (inp?.value || '').trim();
+      if(val === meta.ctf.flag){
+        ctfDone = true; updateFinish();
+        if(status) status.textContent = 'Flag accepted ✓';
+        if(inp) inp.disabled = true; if(chk) chk.disabled = true;
+        showToast('Flag captured!', 'success');
+      }else{
+        if(status) status.textContent = 'Incorrect flag';
+        showToast('Incorrect flag, try again.', 'error');
+      }
+    });
+  }
+  
+  // Code-fill task wiring
+  if(meta.codeFill && codeBlock){
+    codeBlock.style.display = '';
+    const sn = codeBlock.querySelector('[data-codefill-snippet]');
+    const inp = codeBlock.querySelector('[data-codefill-input]');
+    const chk = codeBlock.querySelector('[data-codefill-check]');
+    const status = codeBlock.querySelector('[data-codefill-status]');
+    if(sn) sn.textContent = meta.codeFill.snippet;
+    function norm(s){ return String(s||'').replace(/\s+/g,'').toLowerCase(); }
+    chk?.addEventListener('click', ()=>{
+      const ok = norm(inp?.value || '') === norm(meta.codeFill.answer);
+      if(ok){
+        codeDone = true; updateFinish();
+        if(status) status.textContent = 'Correct ✓';
+        if(inp) inp.disabled = true; if(chk) chk.disabled = true;
+        showToast('Snippet looks good!', 'success');
+      }else{
+        if(status) status.textContent = 'Not quite. Hint: use reduce.';
+        showToast('Incorrect snippet, try again.', 'error');
+      }
+    });
+  }
+  
   updateFinish();
   
   if(finishBtn){
     finishBtn.addEventListener('click', ()=>{
-      if(!(readDone && quizDone && reflectDone)){
+      if(!(readDone && quizDone && reflectDone && ctfDone && codeDone)){
         indicateMissing();
         return;
       }
@@ -968,5 +1041,41 @@ function showRankUp(newLevel){
   backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop || e.target.classList.contains('rankup-close')) close(); });
   setTimeout(close, 3500);
 }
+
+
+
+const LB_NAMES_KEY = 'topcit_leaderboard_names';
+function getLeaderboardNames(){
+  try{
+    const s = localStorage.getItem(LB_NAMES_KEY);
+    if(s){ const arr = JSON.parse(s); if(Array.isArray(arr) && arr.length) return arr; }
+  }catch(_){}
+  const defaults = [
+    'Jan Michael','Kennely Ray','Josh Marco','Anne Marie','Marc Marron',
+    'Jermin Ods','Patrick Charles','Trisha Mae','Daniel Bai','Roland Klang'
+  ];
+  try{ localStorage.setItem(LB_NAMES_KEY, JSON.stringify(defaults)); }catch(_){}
+  return defaults;
+}
+function renderLeaderboardNames(){
+  const names = getLeaderboardNames();
+  const top1User = document.querySelector('.leaderboard-top1 .user');
+  if(top1User && names[0]) top1User.textContent = names[0];
+  const top25Users = Array.from(document.querySelectorAll('.leaderboard-top25 .top-player .user'));
+  for(let i=0;i<top25Users.length;i++){ if(names[i+1]) top25Users[i].textContent = names[i+1]; }
+  const restUsers = Array.from(document.querySelectorAll('.leaderboard-rest .player-row .user'));
+  for(let i=0;i<restUsers.length;i++){ if(names[i+5]) restUsers[i].textContent = names[i+5]; }
+}
+function renderDashboardLeaderboardNames(){
+  const names = getLeaderboardNames();
+  const boardUsers = Array.from(document.querySelectorAll('.leaderboard-card .board .user'));
+  if(boardUsers.length){
+    for(let i=0;i<boardUsers.length && i<names.length;i++){
+      boardUsers[i].textContent = names[i];
+    }
+  }
+}
+window.addEventListener('load', renderLeaderboardNames);
+window.addEventListener('load', renderDashboardLeaderboardNames);
 
 
