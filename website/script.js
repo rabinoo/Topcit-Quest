@@ -102,6 +102,13 @@
     if(didLevel){
       showToast(`Rank up! You are now Rank ${rank}.`, 'success');
       showRankUp(`Rank ${rank}`);
+      // Trigger notification for rank up
+      addNotification(
+        'rank_up',
+        '🎉 Rank Up!',
+        `Congratulations! You've reached Rank ${rank}!`
+      );
+      localStorage.setItem(LAST_RANK_KEY, String(rank));
     }
   }
 
@@ -126,6 +133,248 @@
     setTimeout(()=>{ t.style.opacity = '0'; t.style.transform = 'translateY(6px)'; }, 2200);
     setTimeout(()=>{ t.remove(); }, 2600);
   }
+
+  // ===== NOTIFICATION SYSTEM =====
+  const NOTIFICATIONS_KEY = 'topcit_notifications';
+  const LAST_RANK_KEY = 'topcit_last_rank';
+  const LAST_LEADERBOARD_POS_KEY = 'topcit_last_leaderboard_pos';
+  const COURSE_COUNT_KEY = 'topcit_course_count';
+
+  function getNotifications(){
+    try{
+      const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }catch(_){ return []; }
+  }
+
+  function saveNotifications(notifications){
+    try{
+      localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+      updateNotificationBadge();
+    }catch(_){}
+  }
+
+  function addNotification(type, title, message, timestamp = Date.now()){
+    const notifications = getNotifications();
+    const notification = {
+      id: `${type}_${timestamp}_${Math.random().toString(36).substr(2, 9)}`,
+      type,
+      title,
+      message,
+      timestamp,
+      read: false
+    };
+    notifications.unshift(notification); // Add to beginning
+    // Keep only last 20 notifications
+    if(notifications.length > 20){
+      notifications.splice(20);
+    }
+    saveNotifications(notifications);
+    showToast(title, 'info');
+  }
+
+  function markNotificationRead(id){
+    const notifications = getNotifications();
+    const notification = notifications.find(n => n.id === id);
+    if(notification){
+      notification.read = true;
+      saveNotifications(notifications);
+    }
+  }
+
+  function markAllNotificationsRead(){
+    const notifications = getNotifications();
+    notifications.forEach(n => n.read = true);
+    saveNotifications(notifications);
+  }
+
+  function updateNotificationBadge(){
+    const notifications = getNotifications();
+    const unreadCount = notifications.filter(n => !n.read).length;
+    const badges = document.querySelectorAll('#notify-btn .dot-badge');
+    badges.forEach(badge => {
+      if(unreadCount > 0){
+        badge.style.display = 'inline-block';
+        badge.setAttribute('aria-hidden', 'false');
+      } else {
+        badge.style.display = 'none';
+        badge.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  function checkRankUpNotification(){
+    const currentRank = levelIdx + 1;
+    const lastRank = getNum(LAST_RANK_KEY, 1);
+    
+    if(currentRank > lastRank){
+      addNotification(
+        'rank_up',
+        '🎉 Rank Up!',
+        `Congratulations! You've reached Rank ${currentRank}!`
+      );
+      localStorage.setItem(LAST_RANK_KEY, String(currentRank));
+    }
+  }
+
+  function checkNewCoursesNotification(){
+    // Count available courses from COURSE_META
+    const availableCourses = Object.keys(window.COURSE_META || {}).length;
+    const lastCourseCount = getNum(COURSE_COUNT_KEY, 0);
+    
+    if(availableCourses > lastCourseCount && lastCourseCount > 0){
+      const newCourses = availableCourses - lastCourseCount;
+      addNotification(
+        'new_course',
+        '📚 New Course Available!',
+        `${newCourses} new course${newCourses > 1 ? 's' : ''} ${newCourses > 1 ? 'are' : 'is'} now available!`
+      );
+    }
+    localStorage.setItem(COURSE_COUNT_KEY, String(availableCourses));
+  }
+
+  function checkLeaderboardPositionNotification(){
+    // Simulate leaderboard position check (you can integrate with actual leaderboard data)
+    const currentPos = Math.floor(Math.random() * 100) + 1; // Placeholder
+    const lastPos = getNum(LAST_LEADERBOARD_POS_KEY, 0);
+    
+    if(lastPos > 0 && currentPos !== lastPos){
+      const improved = currentPos < lastPos;
+      addNotification(
+        'leaderboard',
+        improved ? '📈 Leaderboard Update!' : '📊 Leaderboard Update',
+        improved 
+          ? `Great job! You moved up to position #${currentPos} (from #${lastPos})`
+          : `Your leaderboard position changed to #${currentPos}`
+      );
+    }
+    localStorage.setItem(LAST_LEADERBOARD_POS_KEY, String(currentPos));
+  }
+
+  function createNotificationDropdown(){
+    const notifyBtn = document.getElementById('notify-btn');
+    if(!notifyBtn) return;
+
+    // Create dropdown if it doesn't exist
+    let dropdown = document.getElementById('notification-dropdown');
+    if(!dropdown){
+      dropdown = document.createElement('div');
+      dropdown.id = 'notification-dropdown';
+      dropdown.className = 'notification-dropdown';
+      dropdown.setAttribute('aria-hidden', 'true');
+      
+      const header = document.createElement('div');
+      header.className = 'notification-header';
+      header.innerHTML = `
+        <h3>Notifications</h3>
+        <button class="mark-all-read-btn" id="mark-all-read">Mark all read</button>
+      `;
+      
+      const list = document.createElement('div');
+      list.className = 'notification-list';
+      list.id = 'notification-list';
+      
+      dropdown.appendChild(header);
+      dropdown.appendChild(list);
+      notifyBtn.parentNode.insertBefore(dropdown, notifyBtn.nextSibling);
+    }
+
+    return dropdown;
+  }
+
+  function renderNotifications(){
+    const list = document.getElementById('notification-list');
+    if(!list) return;
+
+    const notifications = getNotifications();
+    
+    if(notifications.length === 0){
+      list.innerHTML = '<div class="no-notifications">No notifications yet</div>';
+      return;
+    }
+
+    list.innerHTML = notifications.map(notification => `
+      <div class="notification-item ${notification.read ? 'read' : 'unread'}" data-id="${notification.id}">
+        <div class="notification-content">
+          <div class="notification-title">${notification.title}</div>
+          <div class="notification-message">${notification.message}</div>
+          <div class="notification-time">${formatNotificationTime(notification.timestamp)}</div>
+        </div>
+        ${!notification.read ? '<div class="unread-indicator"></div>' : ''}
+      </div>
+    `).join('');
+
+    // Add click handlers to mark as read
+    list.querySelectorAll('.notification-item.unread').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.getAttribute('data-id');
+        markNotificationRead(id);
+        renderNotifications();
+      });
+    });
+  }
+
+  function formatNotificationTime(timestamp){
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if(minutes < 1) return 'Just now';
+    if(minutes < 60) return `${minutes}m ago`;
+    if(hours < 24) return `${hours}h ago`;
+    return `${days}d ago`;
+  }
+
+  function initNotificationSystem(){
+    createNotificationDropdown();
+    updateNotificationBadge();
+    
+    const notifyBtn = document.getElementById('notify-btn');
+    const dropdown = document.getElementById('notification-dropdown');
+    
+    if(notifyBtn && dropdown){
+      notifyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = dropdown.getAttribute('aria-hidden') === 'false';
+        
+        if(isVisible){
+          dropdown.setAttribute('aria-hidden', 'true');
+          dropdown.style.display = 'none';
+        } else {
+          renderNotifications();
+          dropdown.setAttribute('aria-hidden', 'false');
+          dropdown.style.display = 'block';
+        }
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if(!notifyBtn.contains(e.target) && !dropdown.contains(e.target)){
+          dropdown.setAttribute('aria-hidden', 'true');
+          dropdown.style.display = 'none';
+        }
+      });
+
+      // Mark all read button
+      const markAllReadBtn = document.getElementById('mark-all-read');
+      if(markAllReadBtn){
+        markAllReadBtn.addEventListener('click', () => {
+          markAllNotificationsRead();
+          renderNotifications();
+        });
+      }
+    }
+
+    // Check for notifications on page load
+    checkRankUpNotification();
+    checkNewCoursesNotification();
+    
+    // Periodically check leaderboard position (every 5 minutes)
+    setInterval(checkLeaderboardPositionNotification, 5 * 60 * 1000);
+  }
+  // ===== END NOTIFICATION SYSTEM =====
 
   // Animate charts on load
   function revealCharts(){
@@ -989,6 +1238,104 @@ function setupProfileModal(){
     profileBtn?.addEventListener('click', openProfileModal);
   }
 }
+// === Auth utilities ===
+const AUTH_KEY = 'topcit_user';
+function getAuthUser(){
+  try{ const raw = localStorage.getItem(AUTH_KEY); return raw ? JSON.parse(raw) : null; }catch(_){ return null; }
+}
+function isAuthPage(){
+  const name = location.pathname.split('/').pop().toLowerCase();
+  return name === 'login.html' || name === 'register.html';
+}
+function redirectTo(page){ try{ location.assign(page); }catch(_){ location.href = page; } }
+function enforceAuthLanding(){
+  const user = getAuthUser();
+  if(!user && !isAuthPage()){
+    redirectTo('login.html');
+    return;
+  }
+  if(user && isAuthPage()){
+    redirectTo('index.html');
+  }
+}
+
+// Run early to avoid flash of protected pages
+window.addEventListener('DOMContentLoaded', enforceAuthLanding);
+
+function showConfirmModal(opts){
+  const { title = 'Confirm', message = '', confirmText = 'OK', cancelText = 'Cancel', onConfirm = ()=>{}, onCancel = ()=>{} } = opts || {};
+  // Inject styles if not present (ensures modal works on all pages)
+  if(!document.getElementById('topcit-modal-style')){
+    const s = document.createElement('style');
+    s.id = 'topcit-modal-style';
+    s.textContent = `.modal-backdrop{position:fixed;inset:0;display:grid;place-items:center;background:rgba(2,8,23,.55);backdrop-filter:blur(2px);z-index:1000}`+
+                    `.modal{background:var(--card);color:var(--text);border-radius:16px;box-shadow:0 22px 50px rgba(2,8,23,.25);border:1px solid rgba(148,163,184,.28);padding:20px;width:min(480px,calc(100% - 32px))}`+
+                    `.modal-head h3{margin:0;font-weight:800}`+
+                    `.modal-body p{margin:10px 0 0;color:var(--muted)}`+
+                    `.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}`;
+    document.head.appendChild(s);
+  }
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.setAttribute('role','dialog');
+  backdrop.setAttribute('aria-modal','true');
+  backdrop.innerHTML = `
+    <div class="modal">
+      <div class="modal-head"><h3>${title}</h3></div>
+      <div class="modal-body"><p>${message}</p></div>
+      <div class="modal-actions">
+        <button class="btn" data-cancel>${cancelText}</button>
+        <button class="btn primary" data-confirm>${confirmText}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  const cancelBtn = backdrop.querySelector('[data-cancel]');
+  const confirmBtn = backdrop.querySelector('[data-confirm]');
+  const cleanup = ()=>{ try{ document.body.removeChild(backdrop); }catch(_){} };
+  cancelBtn?.addEventListener('click', ()=>{ cleanup(); onCancel(); });
+  confirmBtn?.addEventListener('click', ()=>{ cleanup(); onConfirm(); });
+  backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop){ cleanup(); onCancel(); } });
+  // Escape key
+  document.addEventListener('keydown', function handler(ev){ if(ev.key === 'Escape'){ cleanup(); onCancel(); document.removeEventListener('keydown', handler); } });
+}
+function setupLogout(){
+  const btn = document.getElementById('logout-btn');
+  if(btn && !btn.dataset.bound){
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      showConfirmModal({
+        title: 'Confirm Logout',
+        message: 'Are you sure you want to logout?',
+        confirmText: 'Logout',
+        cancelText: 'Cancel',
+        onConfirm(){
+          try{ localStorage.setItem('topcit_notice','logged_out'); }catch(_){}
+          try{ localStorage.removeItem('topcit_user'); }catch(_){}
+          redirectTo('login.html');
+        }
+      });
+    });
+  }
+}
+function consumeNotice(){
+  try{ const v = localStorage.getItem('topcit_notice'); if(v) localStorage.removeItem('topcit_notice'); return v; }catch(_){ return null; }
+}
+function showLoginLogoutNotice(){
+  const v = consumeNotice();
+  if(v === 'logged_in') showToast('You successfully logged in.', 'success');
+  else if(v === 'logged_out') showToast('You successfully logged out.', 'success');
+}
+function setupLogoHome(){
+  const el = document.querySelector('.logo-img') || document.querySelector('.logo');
+  if(el && !el.dataset.bound){
+    el.dataset.bound = '1';
+    if(el instanceof HTMLElement) el.style.cursor = 'pointer';
+    el.addEventListener('click', ()=> redirectTo('index.html'));
+  }
+}
+
 window.addEventListener('load', setupProfileModal);
 window.addEventListener('load', setupCoursePage);
 window.addEventListener('load', revealCharts);
@@ -999,6 +1346,12 @@ window.addEventListener('load', setupLearnCourses);
 window.addEventListener('load', setupLearnTabs);
 window.addEventListener('load', setupDashboardMaterials);
 window.addEventListener('load', setupTopicsSection);
+window.addEventListener('load', initNotificationSystem);
+window.addEventListener('load', setupLogout);
+window.addEventListener('load', showLoginLogoutNotice);
+window.addEventListener('load', setupLogoHome);
+// Final guard on load as well
+window.addEventListener('load', enforceAuthLanding);
 })();
 
 
