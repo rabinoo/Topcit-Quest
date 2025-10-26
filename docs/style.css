@@ -759,6 +759,11 @@ body.auth-bg::after{content:none}
 .auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:10px}
 .auth-logo{width:64px;height:64px;display:block}
 .auth-brand-name{font-weight:900;font-size:22px}
+
+.auth-brand.register-brand .auth-logo{width:180px;height:156px}
+.auth-brand.register-brand .auth-brand-name{font-size:36px}
+.auth-brand.register-brand{gap:16px;margin-bottom:24px;justify-content:center;margin-left:auto;margin-right:auto}
+
 /* Larger brand for login page */
 .auth-brand.login-brand .auth-logo{width:160px;height:144px}
     .auth-brand.login-brand .auth-brand-name{font-size:30px;text-align:center}
