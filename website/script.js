@@ -1431,4 +1431,50 @@ function renderDashboardLeaderboardNames(){
 window.addEventListener('load', renderLeaderboardNames);
 window.addEventListener('load', renderDashboardLeaderboardNames);
 
+// ---- Page Transitions ----
+function enablePageTransitions(){
+  // Create overlay once
+  let overlay = document.querySelector('.page-transition-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.className = 'page-transition-overlay';
+    document.body.appendChild(overlay);
+  }
+  function startTransition(toHref){
+    overlay.classList.add('active');
+    // allow CSS to animate
+    setTimeout(()=>{
+      try{ location.assign(toHref); }catch(_){ location.href = toHref; }
+    }, 180);
+  }
+  // Patch redirectTo if present
+  try{
+    const originalRedirect = (typeof redirectTo === 'function') ? redirectTo : null;
+    window.redirectTo = function(page){
+      if(page){ startTransition(page); }
+      else if(originalRedirect){ originalRedirect(page); }
+    };
+  }catch(_){}
+  // Intercept link clicks for same-window navigation
+  document.addEventListener('click', (e)=>{
+    const a = e.target instanceof Element ? e.target.closest('a') : null;
+    if(!a) return;
+    const href = a.getAttribute('href');
+    const target = a.getAttribute('target');
+    const download = a.hasAttribute('download');
+    if(!href || href.startsWith('#') || target === '_blank' || download) return;
+    // Only handle same-origin relative navigations
+    const isExternal = /^https?:\/\//i.test(href) && !href.includes(location.host);
+    if(isExternal) return;
+    e.preventDefault();
+    startTransition(href);
+  });
+  // Enter animation on initial load
+  requestAnimationFrame(()=>{
+    document.body.classList.add('page-enter');
+    setTimeout(()=> document.body.classList.remove('page-enter'), 300);
+  });
+}
+window.addEventListener('load', enablePageTransitions);
+
 

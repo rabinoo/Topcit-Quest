@@ -39,7 +39,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 
 .app-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:20px 24px; 
+  padding:10px 24px; 
   background:linear-gradient(135deg, rgba(0,123,255,.95), rgba(54,198,255,.95));
   box-shadow:var(--shadow);
   position:sticky; top:0; z-index:10; color:#fff;
@@ -90,7 +90,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .btn.tiny{padding:6px 10px;font-size:12px}
 .btn:hover{box-shadow:0 8px 20px rgba(0,123,255,.25); transform:translateY(-1px)}
 
-.container{max-width:1440px;margin:24px auto;padding:0 24px;display:flex;flex-direction:column;gap:28px}
+.container{max-width:1920px;margin:24px auto;padding:0 24px;display:flex;flex-direction:column;gap:28px}
 .grid.two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
 
 .card{background:rgba(255,255,255,0.7);backdrop-filter:saturate(160%) blur(10px);-webkit-backdrop-filter:saturate(160%) blur(10px);border-radius:var(--radius);box-shadow:0 20px 40px rgba(2,8,23,0.08);padding:20px;border:1px solid rgba(255,255,255,.6)}
@@ -202,7 +202,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .user{font-weight:700}
 .score{color:#0ea5e9;font-weight:800;text-shadow:0 0 8px rgba(14,165,233,.35)}
 
-.app-footer{margin:20px auto 40px;max-width:1200px;color:var(--muted);text-align:center;font-size:13px}
+.app-footer{margin:20px auto 40px;max-width:1920px;color:var(--muted);text-align:center;font-size:13px}
 
 /* Toasts */
 .toast-container{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:10px;z-index:50}
@@ -549,6 +549,7 @@ svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
 
 
 
+
 /* Rank-up popup */
 .rankup-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:999}
 .rankup-backdrop.open{opacity:1;pointer-events:auto}
@@ -736,6 +737,79 @@ svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
   min-height: 80vh;
   padding: 24px 16px;
 }
+/* Centered actions on login */
+ .auth-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;max-width:520px;margin-left:auto;margin-right:auto}
+ .auth-actions .btn{width:100%;height:48px}
+ @media(max-width:520px){.auth-actions{grid-template-columns:1fr}}
+.auth-page{display:grid;place-items:center;min-height:100vh;margin:0 auto;padding:0 24px;position:relative}
+body.auth-bg{background:url('images/LoginPagePic.jpg') center/cover no-repeat fixed;height:100vh;overflow:hidden}
+body.auth-bg::before{content:none}
+body.auth-bg::after{content:none}
+.auth-shell{position:relative;z-index:1}
+.auth-shell{display:grid;grid-template-columns:2fr minmax(480px,560px);gap:40px;align-items:stretch;min-height:80vh;padding:24px 16px;max-width:none;margin-left:auto;margin-right:24px;justify-content:end}
+.auth-panel{display:flex;flex-direction:column;justify-content:center;padding:44px}
+.auth-illustration{border-radius:0;overflow:visible;position:relative;background:transparent}
+.auth-illustration img{display:none}
+.auth-illustration::after{display:none}
+.auth-illustration .overlay-card{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:32px}
+.auth-illustration img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(110%)}
+@media(max-width:900px){.auth-shell{grid-template-columns:1fr}.auth-illustration{display:none}}
+
+/* Auth brand logo above welcome */
+.auth-brand{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.auth-logo{width:64px;height:64px;display:block}
+.auth-brand-name{font-weight:900;font-size:22px}
+/* Larger brand for login page */
+.auth-brand.login-brand .auth-logo{width:160px;height:144px}
+    .auth-brand.login-brand .auth-brand-name{font-size:30px;text-align:center}
+    .auth-brand.login-brand{gap:10px;margin-bottom:8px;justify-content:center;margin-left:auto;margin-right:auto}
+    .auth-panel.login-panel{padding-top:24px}
+
+/* Auth panel sizing to reduce empty space */
+.auth-panel h2{font-size:36px;line-height:1.2}
+.auth-panel .topic-desc{font-size:17px}
+.auth-panel .text-input{height:56px;font-size:16px}
+.auth-panel .btn{padding:14px 22px;font-size:16px}
+.auth-panel .chip{padding:9px 14px;font-size:14px}
+  
+   /* Inline register link without background */
+   .auth-panel .link-text{background:transparent;border:none;box-shadow:none;padding:0;border-radius:0;color:#ffffff;font-weight:800;text-decoration:none}
+   .auth-panel .link-text:hover{opacity:.9;text-decoration:underline}
+   
+   /* Google sign-in button */
+    .btn.google-btn{background:transparent;color:#fff;border:none;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:0;font-weight:600;white-space:nowrap;transition:.2s box-shadow,.2s transform,.2s opacity}
+     .btn.google-btn:hover{opacity:.9;transform:translateY(-1px)}
+     .btn.google-btn:active{opacity:.8;transform:translateY(0)}
+     .btn.google-btn:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+     .google-icon-badge{width:24px;height:24px;border-radius:50%;background:#fff;display:inline-flex;align-items:center;justify-content:center}
+     .google-icon{width:18px;height:18px;display:block}
+  
+   /* Auth button emphasis */
+.auth-panel .btn:not(.primary){
+  background:#ffffff;
+  color:#0f172a;
+  border:1px solid rgba(2,8,23,.12);
+  box-shadow:0 8px 20px rgba(2,8,23,.10);
+}
+.auth-panel .btn:not(.primary):hover{
+  box-shadow:0 14px 28px rgba(2,8,23,.16);
+  transform:translateY(-2px);
+}
+.auth-panel .btn.primary{
+  background:linear-gradient(180deg,#0d6efd,#007BFF);
+  color:#fff;
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow:0 14px 28px rgba(0,123,255,.35);
+}
+.auth-panel .btn.primary:hover{
+   background:linear-gradient(180deg,#2b7cff,#0d6efd);
+   box-shadow:0 20px 40px rgba(0,123,255,.55);
+   transform:translateY(-2px) scale(1.01);
+ }
+.auth-panel .btn:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(0,123,255,.35), 0 12px 26px rgba(2,8,23,.14);
+}
 
 
 
@@ -745,6 +819,15 @@ svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
 .modal-head h3{margin:0;font-weight:800}
 .modal-body p{margin:10px 0 0;color:var(--muted)}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+
+/* Page transition overlay + enter animation */
+.page-transition-overlay{position:fixed;inset:0;background:rgba(2,8,23,0);backdrop-filter:none;pointer-events:none;transition:background .18s ease, backdrop-filter .18s ease;z-index:9999}
+.page-transition-overlay.active{background:rgba(2,8,23,.06);backdrop-filter:blur(2px)}
+body{transition:opacity .22s ease, transform .22s ease}
+body.page-enter{opacity:0; transform:translateY(4px)}
+@media (prefers-color-scheme: dark){
+  .page-transition-overlay.active{background:rgba(0,0,0,.18);backdrop-filter:blur(2px)}
+}
 
 
 
