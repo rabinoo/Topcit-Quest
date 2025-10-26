@@ -6,6 +6,7 @@
   <title>Login | TOPCIT Quest</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="auth-bg">
   <!-- Auth page: header removed -->
@@ -51,10 +52,47 @@
   <footer class="app-footer">© 2025 Topcit Quest</footer>
 
   <script>
+    // Google OAuth Configuration
+    const GOOGLE_CLIENT_ID = '598357286838-uvrs8bi3apbvnu4bkm6d6ojtdhfq819j.apps.googleusercontent.com'; // Google Client ID for OAuth authentication
+    
     function saveUser(user){
       try{ localStorage.setItem('topcit_user', JSON.stringify(user)); }catch(_){}
     }
     function isValid(str){ return typeof str === 'string' && str.trim().length > 0 }
+    
+    // Initialize Google OAuth when the page loads
+    window.onload = function() {
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleResponse
+      });
+    };
+    
+    // Handle Google OAuth response
+    function handleGoogleResponse(response) {
+      try {
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        const user = {
+          name: payload.name,
+          email: payload.email,
+          picture: payload.picture,
+          provider: 'google'
+        };
+        saveUser(user);
+        localStorage.setItem('topcit_notice', 'logged_in');
+        window.location.href = 'index.html';
+      } catch (error) {
+        console.error('Google authentication error:', error);
+        document.getElementById('login-error').textContent = 'Google authentication failed. Please try again.';
+        document.getElementById('login-error').style.display = 'block';
+      }
+    }
+    
+    // Trigger Google OAuth when button is clicked
+    function initiateGoogleLogin() {
+      google.accounts.id.prompt();
+    }
+    
     document.getElementById('login-form').addEventListener('submit', function(e){
       e.preventDefault();
       const u = document.getElementById('login-username').value.trim();
@@ -67,12 +105,8 @@
       try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){}
       window.location.href = 'index.html';
     });
-    document.getElementById('google-login').addEventListener('click', function(){
-      // Placeholder for Google OAuth — simulates a successful login
-      saveUser({ name: 'Google User', email: 'google.user@example.com', provider: 'google' });
-      try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){}
-      window.location.href = 'index.html';
-    });
+    
+    document.getElementById('google-login').addEventListener('click', initiateGoogleLogin);
   </script>
 </body>
 </html>

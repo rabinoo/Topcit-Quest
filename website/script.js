@@ -1092,17 +1092,28 @@ function applyHeaderAvatar(profile){
   const btn = document.getElementById('user-menu-btn');
   const avatarEl = btn ? btn.querySelector('.avatar') : null;
   if(!avatarEl) return;
-  const hasImg = !!profile?.avatar;
-  if(hasImg){
+  
+  // Check for Google profile picture first, then local avatar
+  const user = getAuthUser();
+  const googlePicture = user?.picture;
+  const localAvatar = profile?.avatar;
+  
+  const imageUrl = googlePicture || localAvatar;
+  
+  if(imageUrl){
     const img = document.createElement('img');
     img.alt = 'Profile avatar';
-    img.src = profile.avatar;
+    img.src = imageUrl;
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'cover';
+    img.style.borderRadius = '50%';
     avatarEl.textContent = '';
     avatarEl.innerHTML = '';
     avatarEl.appendChild(img);
+  } else {
+    // Fallback to default emoji if no image available
+    avatarEl.innerHTML = '👩‍💻';
   }
 }
 function buildProfileModal(){
@@ -1186,16 +1197,25 @@ function openProfileModal(){
   const backdrop = document.getElementById('profile-backdrop');
   const modal = document.getElementById('profile-modal');
   if(!backdrop || !modal) return;
-  // Populate fields
+  
+  // Get user data from both profile and auth
   const p = readProfile();
+  const user = getAuthUser();
+  
+  // Populate fields with Google data if available, otherwise use profile data
   const nameEl = modal.querySelector('#profile-name');
   const emailEl = modal.querySelector('#profile-email');
   const phoneEl = modal.querySelector('#profile-phone');
   const preview = modal.querySelector('#profile-avatar-preview');
-  if(nameEl) nameEl.value = p.name || '';
-  if(emailEl) emailEl.value = p.email || '';
+  
+  if(nameEl) nameEl.value = user?.name || p.name || '';
+  if(emailEl) emailEl.value = user?.email || p.email || '';
   if(phoneEl) phoneEl.value = p.phone || '';
-  preview.innerHTML = p.avatar ? `<img alt="avatar" src="${p.avatar}">` : '<span class="ms">account_circle</span>';
+  
+  // Show Google profile picture if available, otherwise local avatar
+  const imageUrl = user?.picture || p.avatar;
+  preview.innerHTML = imageUrl ? `<img alt="avatar" src="${imageUrl}">` : '<span class="ms">account_circle</span>';
+  
   // Stats
   const walletEl = modal.querySelector('#profile-wallet');
   const xpEl = modal.querySelector('#profile-xp');
