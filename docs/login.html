@@ -19,7 +19,6 @@
       <div class="auth-panel card login-panel">
         <div class="auth-brand login-brand">
           <img src="topcit-quest-logo.svg" alt="TOPCIT Quest logo" class="auth-logo" />
-          <span class="auth-brand-name">TOPCIT Quest</span>
         </div>
 
         <h2 style="margin:0 0 8px">Sign in</h2>
@@ -33,7 +32,12 @@
             </label>
             <label>
               <div class="topic-title" style="font-size:13px">Password</div>
-              <input type="password" id="login-password" class="text-input" placeholder="••••••••" required />
+              <div class="password-field">
+                <input type="password" id="login-password" class="text-input" placeholder="••••••••" required />
+                <button type="button" class="password-toggle" onclick="togglePassword('login-password', this)">
+                  <span class="ms">visibility</span>
+                </button>
+              </div>
             </label>
           </div>
           <div class="auth-actions">
@@ -80,7 +84,10 @@
         };
         saveUser(user);
         localStorage.setItem('topcit_notice', 'logged_in');
-        window.location.href = 'index.html';
+        showGoogleLoginSuccessModal(user.name);
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 2000);
       } catch (error) {
         console.error('Google authentication error:', error);
         document.getElementById('login-error').textContent = 'Google authentication failed. Please try again.';
@@ -107,6 +114,45 @@
     });
     
     document.getElementById('google-login').addEventListener('click', initiateGoogleLogin);
+    
+    // Password toggle functionality
+    function togglePassword(inputId, button) {
+      const input = document.getElementById(inputId);
+      const icon = button.querySelector('.ms');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    }
+    
+    // Google login success modal
+    function showGoogleLoginSuccessModal(userName) {
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop google-success-modal';
+      modal.innerHTML = `
+        <div class="modal card" style="max-width: 400px; text-align: center;">
+          <div style="margin-bottom: 16px;">
+            <span class="ms" style="font-size: 48px; color: #10b981;">check_circle</span>
+          </div>
+          <h3 style="margin: 0 0 8px; color: var(--text);">Welcome back, ${userName}!</h3>
+          <p style="margin: 0; color: var(--muted);">Successfully logged in with Google. Redirecting...</p>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      
+      // Show modal with animation
+      setTimeout(() => modal.classList.add('open'), 10);
+      
+      // Remove modal after redirect
+      setTimeout(() => {
+        modal.classList.remove('open');
+        setTimeout(() => document.body.removeChild(modal), 300);
+      }, 1800);
+    }
   </script>
 </body>
 </html>

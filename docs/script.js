@@ -521,7 +521,18 @@
     url.searchParams.set('coins', String(coins));
     return url.toString();
   }
-  function getWallet(){ return parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0; }
+  function getWallet(){
+    // Read coins from persistent storage only; never trust editable DOM
+    try{
+      const raw = localStorage.getItem(WALLET_KEY);
+      const v = raw ? parseInt(raw,10) : NaN;
+      if(Number.isFinite(v)) return v;
+    }catch(_){ /* fall through to DOM default */ }
+    // Fallback: initialize storage from DOM default if missing
+    const domDefault = parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0;
+    try{ localStorage.setItem(WALLET_KEY, String(domDefault)); }catch(_){}
+    return domDefault;
+  }
   function setWallet(value){
     const safe = Math.max(0, parseInt(value,10) || 0);
     if(walletAmountEl){ walletAmountEl.textContent = safe.toLocaleString(); }
@@ -533,9 +544,26 @@
     const stored = raw ? parseInt(raw,10) : NaN;
     const value = Number.isFinite(stored) ? stored : domDefault;
     if(!Number.isFinite(stored)){
-      try{ localStorage.setItem(WALLET_KEY, String(domDefault)); }catch(_){}
+      try{ localStorage.setItem(WALLET_KEY, String(domDefault)); }catch(_){ }
     }
     setWallet(value);
+  }
+  // Tamper guard: detect DOM edits to wallet and restore from storage
+  function setupWalletTamperGuard(){
+    if(!walletAmountEl) return;
+    // Ensure UI matches stored value at start
+    setWallet(getWallet());
+    const observer = new MutationObserver(()=>{
+      const stored = getWallet();
+      const shown = parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0;
+      if(shown !== stored){
+        showToast('Wallet display was modified; reverting to trusted balance.', 'error');
+        setWallet(stored);
+        filterAffordableStoreItems();
+        limitDashboardStoreItems();
+      }
+    });
+    observer.observe(walletAmountEl, { childList: true, subtree: true, characterData: true });
   }
   window.addEventListener('storage', (e)=>{
     if(e.key === WALLET_KEY){
@@ -555,6 +583,8 @@
   // Filter store items on dashboard by affordability (show only affordable items)
   function filterAffordableStoreItems(){
     const have = getWallet();
+    let hasAffordableItems = false;
+    
     redeemables.forEach(el=>{
       const inDashboardStore = !!el.closest('.store-items');
       if(!inDashboardStore) return; // Rewards page remains unaffected
@@ -564,7 +594,25 @@
       el.classList.toggle('locked', !affordable);
       if(btn) btn.disabled = !affordable;
       el.style.display = affordable ? '' : 'none';
+      
+      if (affordable) {
+        hasAffordableItems = true;
+      }
     });
+
+    // Show/hide empty message based on affordable items
+    const storeItems = document.getElementById('store-items');
+    const emptyMessage = document.getElementById('empty-store-message');
+    
+    if (storeItems && emptyMessage) {
+      if (hasAffordableItems) {
+        storeItems.style.display = '';
+        emptyMessage.style.display = 'none';
+      } else {
+        storeItems.style.display = 'none';
+        emptyMessage.style.display = 'flex';
+      }
+    }
   }
 
   // Limit dashboard store to showing only the first 5 visible (affordable) items
@@ -1331,9 +1379,12 @@ function setupLogout(){
         confirmText: 'Logout',
         cancelText: 'Cancel',
         onConfirm(){
-          try{ localStorage.setItem('topcit_notice','logged_out'); }catch(_){}
-          try{ localStorage.removeItem('topcit_user'); }catch(_){}
-          redirectTo('login.html');
+          showLogoutSuccessModal();
+          setTimeout(() => {
+            try{ localStorage.setItem('topcit_notice','logged_out'); }catch(_){}
+            try{ localStorage.removeItem('topcit_user'); }catch(_){}
+            redirectTo('login.html');
+          }, 2000);
         }
       });
     });
@@ -1372,6 +1423,9 @@ window.addEventListener('load', showLoginLogoutNotice);
 window.addEventListener('load', setupLogoHome);
 // Final guard on load as well
 window.addEventListener('load', enforceAuthLanding);
+// Wallet init & tamper guard
+window.addEventListener('load', loadWallet);
+window.addEventListener('load', setupWalletTamperGuard);
 })();
 
 
@@ -1451,49 +1505,39 @@ function renderDashboardLeaderboardNames(){
 window.addEventListener('load', renderLeaderboardNames);
 window.addEventListener('load', renderDashboardLeaderboardNames);
 
-// ---- Page Transitions ----
+// ---- Page Transitions - DISABLED ----
 function enablePageTransitions(){
-  // Create overlay once
-  let overlay = document.querySelector('.page-transition-overlay');
-  if(!overlay){
-    overlay = document.createElement('div');
-    overlay.className = 'page-transition-overlay';
-    document.body.appendChild(overlay);
-  }
-  function startTransition(toHref){
-    overlay.classList.add('active');
-    // allow CSS to animate
-    setTimeout(()=>{
-      try{ location.assign(toHref); }catch(_){ location.href = toHref; }
-    }, 180);
-  }
-  // Patch redirectTo if present
-  try{
-    const originalRedirect = (typeof redirectTo === 'function') ? redirectTo : null;
-    window.redirectTo = function(page){
-      if(page){ startTransition(page); }
-      else if(originalRedirect){ originalRedirect(page); }
-    };
-  }catch(_){}
-  // Intercept link clicks for same-window navigation
-  document.addEventListener('click', (e)=>{
-    const a = e.target instanceof Element ? e.target.closest('a') : null;
-    if(!a) return;
-    const href = a.getAttribute('href');
-    const target = a.getAttribute('target');
-    const download = a.hasAttribute('download');
-    if(!href || href.startsWith('#') || target === '_blank' || download) return;
-    // Only handle same-origin relative navigations
-    const isExternal = /^https?:\/\//i.test(href) && !href.includes(location.host);
-    if(isExternal) return;
-    e.preventDefault();
-    startTransition(href);
-  });
-  // Enter animation on initial load
-  requestAnimationFrame(()=>{
-    document.body.classList.add('page-enter');
-    setTimeout(()=> document.body.classList.remove('page-enter'), 300);
-  });
+  // Page transitions disabled - direct navigation only
+  // Enter animation on initial load - DISABLED
+  // requestAnimationFrame(()=>{
+  //   document.body.classList.add('page-enter');
+  //   setTimeout(()=> document.body.classList.remove('page-enter'), 300);
+  // });
+}
+
+// Logout success modal
+function showLogoutSuccessModal() {
+  const modal = document.createElement('div');
+  modal.className = 'modal-backdrop logout-success-modal';
+  modal.innerHTML = `
+    <div class="modal card" style="max-width: 400px; text-align: center;">
+      <div style="margin-bottom: 16px;">
+        <span class="ms" style="font-size: 48px; color: #10b981;">check_circle</span>
+      </div>
+      <h3 style="margin: 0 0 8px; color: var(--text);">Logged Out Successfully</h3>
+      <p style="margin: 0; color: var(--muted);">You have been logged out. Redirecting to login...</p>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  
+  // Show modal with animation
+  setTimeout(() => modal.classList.add('open'), 10);
+  
+  // Remove modal after redirect
+  setTimeout(() => {
+    modal.classList.remove('open');
+    setTimeout(() => document.body.removeChild(modal), 300);
+  }, 1800);
 }
 window.addEventListener('load', enablePageTransitions);
 
