@@ -338,12 +338,18 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .materials .group-title{color:var(--text);font-weight:800;margin:10px 0 6px}
 
 /* Learn Courses */
-.learn-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(260px,1fr));gap:16px;align-items:stretch}
+.learn-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(260px,320px));gap:16px;align-items:stretch;justify-content:center}
 .learn-item{position:relative;background:linear-gradient(180deg, #f9fafb, #f3f4f6);border:1px solid #e5e7eb;border-radius:14px;padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;min-height:240px;justify-content:flex-start;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease}
 .learn-item::before{content:"";position:absolute;inset:0;border-radius:14px;padding:1px;background:linear-gradient(135deg, rgba(99,102,241,.35), rgba(96,165,250,.35));-webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.0;pointer-events:none}
 .learn-item:hover{transform:translateY(-3px);box-shadow:0 16px 28px rgba(2,8,23,.22), 0 0 0 1px rgba(148,163,184,.18)}
 .learn-item:hover::before{opacity:.9}
 .learn-item .learn-thumb{width:100%;height:140px;border-radius:12px;object-fit:cover;border:1px solid #e2e8f0;background:#fff}
+/* Ensure thumbnails never overflow the card */
+.thumb-wrap{width:100%;height:140px;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;background:#fff}
+.thumb-wrap .learn-thumb{width:100%;height:100%;object-fit:cover;display:block;border:none;background:transparent}
+/* Admin preview cards: ensure thumbnails are contained */
+.module-card .thumb-wrap{width:100%;height:140px;overflow:hidden;border-radius:12px}
+.module-card .thumb-wrap .learn-thumb{width:100%;height:100%;object-fit:cover;display:block}
 .learn-item h4{margin:0;font-weight:800;color:#0f172a}
 .learn-item p{margin:0;color:var(--muted)}
 .learn-item .meta{display:flex;gap:8px;color:var(--muted);font-weight:700;justify-content:center;flex-wrap:wrap}

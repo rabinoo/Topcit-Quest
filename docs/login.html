@@ -122,6 +122,16 @@
 
       if(errors.length){ err.innerHTML = errors.join('<br>'); err.style.display = 'block'; return; }
 
+      // Admin login routing: default credentials go to admin page
+      try {
+        if (u === 'Admin' && p === '000000') {
+          localStorage.setItem('topcit_admin_session', '1');
+          localStorage.setItem('topcit_notice', 'logged_in');
+          window.location.href = 'admin.html';
+          return;
+        }
+      } catch(_){ }
+
       // Preserve full name if previously registered, allow login via username or email
       let existing = null;
       try{ const raw = localStorage.getItem('topcit_user'); existing = raw ? JSON.parse(raw) : null; }catch(_){ existing = null; }

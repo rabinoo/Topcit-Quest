@@ -1259,7 +1259,26 @@
         codeFill: { snippet: 'function sum(arr) {\n  // TODO\n}\n// Expect: sum([1,2,3]) === 6', answer: 'arr.reduce((a,b)=>a+b,0)' }
       }
     };
-    const meta = COURSE_META[id] || { title: 'Course', quiz: { question: 'Quick check:', options: ['A','B','C'], correctIndex: 0 }, bullets: ['Read the material'], reflection: 'Write a brief reflection.' };
+    // Prefer admin-published custom module content if available
+    let customMeta = null;
+    try{
+      const mods = JSON.parse(localStorage.getItem('topcit_custom_modules') || '[]');
+      if(Array.isArray(mods)){
+        const cm = mods.find(m => String(m.id||'').toLowerCase() === id);
+        if(cm){
+          const c = cm.content || {};
+          customMeta = {
+            title: cm.title || 'Course',
+            quiz: c.quiz || null,
+            bullets: c.bullets || null,
+            reflection: c.reflection || null,
+            ctf: c.ctf || null,
+            codeFill: c.codeFill || null
+          };
+        }
+      }
+    }catch(_){ customMeta = null; }
+    let meta = customMeta || (COURSE_META[id] || { title: 'Course', quiz: { question: 'Quick check:', options: ['A','B','C'], correctIndex: 0 }, bullets: ['Read the material'], reflection: 'Write a brief reflection.' });
   
     // Fill header
     const titleEl = container.querySelector('[data-course-title]');
@@ -1599,7 +1618,7 @@ function getAuthUser(){
 }
 function isAuthPage(){
   const name = location.pathname.split('/').pop().toLowerCase();
-  return name === 'login.html' || name === 'register.html';
+  return name === 'login.html' || name === 'register.html' || name === 'admin.html';
 }
 function redirectTo(page){ try{ location.assign(page); }catch(_){ location.href = page; } }
 function enforceAuthLanding(){
@@ -1792,6 +1811,44 @@ window.addEventListener('load', revealCharts);
 window.addEventListener('load', animateRings);
 window.addEventListener('load', filterAffordableStoreItems);
 window.addEventListener('load', () => limitDashboardStoreItems(8));
+// Render admin-published custom modules before binding Learn interactions
+function renderCustomModulesIntoAllGrid(){
+  const onLearnPage = !!document.querySelector('main .card .learn-grid, [data-completed-grid]');
+  if(!onLearnPage) return;
+  let mods = [];
+  try{ mods = JSON.parse(localStorage.getItem('topcit_custom_modules') || '[]'); }catch(_){ mods = []; }
+  const grid = document.querySelector('[data-all-grid]') || document.querySelector('.learn-grid');
+  if(!grid) return;
+  // Always clear defaults
+  if(!Array.isArray(mods) || mods.length === 0){
+    grid.innerHTML = '<p class="muted">No published courses yet.</p>';
+    return;
+  }
+  const toCard = (m)=>{
+    const id = (m.id||'').toLowerCase() || (m.title||'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    const xp = Number.isFinite(m.xp) ? m.xp : 0;
+    const coins = Number.isFinite(m.coins) ? m.coins : 0;
+    const img = m.image || 'images/topics/programming.svg';
+    const desc = m.description || '';
+    return `
+      <article class="learn-item" data-course-id="${id}">
+        <div class="thumb-wrap">
+          <img class="learn-thumb" src="${img}" alt="${(m.title||'Course')} thumbnail">
+        </div>
+        <h4>${m.title||'Course'}</h4>
+        <p>${desc}</p>
+        <div class="meta"><span class="chip blue">XP ${xp}</span><span class="chip orange">Coins ${coins}</span></div>
+        <div class="course-actions">
+          <button class="btn primary" data-course-start data-xp="${xp}" data-coins="${coins}">Start</button>
+          <button class="btn" data-course-finish data-xp="${xp}" data-coins="${coins}" style="display:none">Finish & claim</button>
+        </div>
+        <div class="course-content" style="display:none"><ul><li>Custom module</li><li>Admin-created content</li><li>Practice tasks</li></ul></div>
+      </article>
+    `;
+  };
+  grid.innerHTML = mods.map(toCard).join('');
+}
+window.addEventListener('load', renderCustomModulesIntoAllGrid);
 window.addEventListener('load', setupLearnCourses);
 window.addEventListener('load', setupLearnTabs);
 window.addEventListener('load', setupLearnPreviews);
