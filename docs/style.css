@@ -350,7 +350,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 /* Admin preview cards: ensure thumbnails are contained */
 .module-card .thumb-wrap{width:100%;height:140px;overflow:hidden;border-radius:12px}
 .module-card .thumb-wrap .learn-thumb{width:100%;height:100%;object-fit:cover;display:block}
-.learn-item h4{margin:0;font-weight:800;color:#0f172a}
+.learn-item h4{margin:0;font-weight:800;color:var(--text)}
 .learn-item p{margin:0;color:var(--muted)}
 .learn-item .meta{display:flex;gap:8px;color:var(--muted);font-weight:700;justify-content:center;flex-wrap:wrap}
 .learn-item .course-actions{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:auto}
@@ -910,7 +910,8 @@ svg defs linearGradient#ringGradient stop{stop-color:var(--blue)}
 }
 /* Centered actions on login */
  .auth-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;max-width:520px;margin-left:auto;margin-right:auto}
- .auth-actions .btn{width:100%;height:48px}
+ .auth-actions .btn{width:100%;height:40px;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+ .auth-actions #google-render-target{width:100%;height:40px;display:flex;align-items:center}
  @media(max-width:520px){.auth-actions{grid-template-columns:1fr}}
 .auth-page{display:grid;place-items:center;min-height:100vh;margin:0 auto;padding:0 24px;position:relative}
 body.auth-bg{background:url('images/LoginPagePic.jpg') center/cover no-repeat fixed;height:100vh;overflow:hidden}
@@ -972,14 +973,15 @@ body.auth-bg::after{content:none}
   transform:translateY(-2px);
 }
 .auth-panel .btn.primary{
-  background:linear-gradient(180deg,#0d6efd,#007BFF);
+  background:#1a73e8; /* Google blue to match GIS button */
   color:#fff;
   border:1px solid rgba(0,0,0,.12);
-  box-shadow:0 14px 28px rgba(0,123,255,.35);
+  box-shadow:0 14px 28px rgba(26,115,232,.35);
+  border-radius:9999px; /* pill shape */
 }
 .auth-panel .btn.primary:hover{
-   background:linear-gradient(180deg,#2b7cff,#0d6efd);
-   box-shadow:0 20px 40px rgba(0,123,255,.55);
+   background:#2b7de9;
+   box-shadow:0 20px 40px rgba(26,115,232,.55);
    transform:translateY(-2px) scale(1.01);
  }
 .auth-panel .btn:focus-visible{

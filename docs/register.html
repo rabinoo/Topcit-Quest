@@ -6,6 +6,7 @@
   <title>Register | TOPCIT Quest</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <link rel="icon" type="image/png" href="images/coin.png">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script defer src="script.js"></script>
 </head>
@@ -96,11 +97,25 @@
     }
     function setFieldError(el, has){ if(el) el.classList.toggle('error', !!has); }
     
-    // Initialize Google OAuth when the page loads
+    // Local guard to ensure Google Identity script is loaded
+    function ensureGsi(cb){
+      try{
+        if(window.google && google.accounts && google.accounts.id){ cb(); return; }
+      }catch(_){ }
+      const tag = document.getElementById('google-gsi-client');
+      if(typeof ensureGoogleClientLoaded === 'function'){ ensureGoogleClientLoaded(cb); return; }
+      if(tag){ tag.addEventListener('load', ()=> cb()); }
+    }
+
+    // Initialize Google OAuth when the page loads (after GIS is ready)
     window.onload = function() {
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleResponse
+      ensureGsi(()=>{
+        try{
+          google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse
+          });
+        }catch(_){ }
       });
     };
     
@@ -127,9 +142,17 @@
       }
     }
     
-    // Trigger Google OAuth when button is clicked
+    // Trigger Google OAuth when button is clicked (guarded and initializes client_id if needed)
     function initiateGoogleLogin() {
-      google.accounts.id.prompt();
+      ensureGsi(()=>{
+        try{
+          google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleResponse
+          });
+          google.accounts.id.prompt();
+        }catch(_){ console.warn('Google not ready yet, please try again.'); }
+      });
     }
     
     document.getElementById('register-form').addEventListener('submit', function(e){

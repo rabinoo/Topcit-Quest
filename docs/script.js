@@ -1621,10 +1621,63 @@ function isAuthPage(){
   return name === 'login.html' || name === 'register.html' || name === 'admin.html';
 }
 function redirectTo(page){ try{ location.assign(page); }catch(_){ location.href = page; } }
+
+// ---- Google Identity Services integration (site-wide prompt) ----
+const GOOGLE_CLIENT_ID = '598357286838-uvrs8bi3apbvnu4bkm6d6ojtdhfq819j.apps.googleusercontent.com';
+
+function ensureGoogleClientLoaded(callback){
+  try{
+    if(window.google && google.accounts && google.accounts.id){ callback(); return; }
+  }catch(_){ }
+  const existing = document.getElementById('google-gsi-client');
+  if(existing){ existing.addEventListener('load', ()=> callback()); return; }
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.async = true; s.defer = true; s.id = 'google-gsi-client';
+  s.onload = ()=> { try{ callback(); }catch(_){ } };
+  s.onerror = ()=> { /* silently fail to avoid blocking */ };
+  document.head.appendChild(s);
+}
+
+function decodeJwtBody(credential){
+  try{
+    const payload = credential.split('.')[1];
+    const json = atob(payload.replace(/-/g,'+').replace(/_/g,'/'));
+    return JSON.parse(json);
+  }catch(_){ return null; }
+}
+
+function handleGoogleIdentityResponse(response){
+  try{
+    const data = decodeJwtBody(response?.credential || '');
+    if(!data) return;
+    const user = { name: data.name, email: data.email, picture: data.picture, provider: 'google' };
+    try{ localStorage.setItem(AUTH_KEY, JSON.stringify(user)); }catch(_){ }
+    try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){ }
+    showLoginLogoutNotice && showLoginLogoutNotice();
+    applyHeaderAvatar && applyHeaderAvatar(readProfile());
+  }catch(_){ }
+}
+
+function promptGoogleLoginIfNoUser(){
+  if(isAuthPage()) return; // auth pages already handle login
+  const user = getAuthUser();
+  if(user) return;
+  let redirected = false;
+  const timer = setTimeout(()=>{ if(!getAuthUser() && !redirected){ redirected = true; redirectTo('login.html'); } }, 8000);
+  ensureGoogleClientLoaded(()=>{
+    try{
+      google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: (resp)=>{ handleGoogleIdentityResponse(resp); clearTimeout(timer); } });
+      google.accounts.id.prompt();
+    }catch(_){ /* fallback handles redirect */ }
+  });
+}
+
 function enforceAuthLanding(){
   const user = getAuthUser();
   if(!user && !isAuthPage()){
-    redirectTo('login.html');
+    // Attempt Google login prompt first; fallback redirect handled internally
+    promptGoogleLoginIfNoUser();
     return;
   }
   if(user && isAuthPage()){
