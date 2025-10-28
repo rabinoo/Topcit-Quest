@@ -703,7 +703,7 @@
         const meta = item.querySelector('.meta');
         // Clean any previous card-level meta and progress (we now show these in the preview)
         if(meta){
-          meta.querySelectorAll('.chip.purple, .chip.gray:not([data-ongoing]), .chip.subtle').forEach(el => el.remove());
+          meta.querySelectorAll('.chip.purple:not([data-difficulty]), .chip.gray:not([data-ongoing]), .chip.subtle').forEach(el => el.remove());
         }
         const existingProgress = item.querySelector('.progress');
         if(existingProgress) existingProgress.remove();
@@ -1811,6 +1811,32 @@ window.addEventListener('load', revealCharts);
 window.addEventListener('load', animateRings);
 window.addEventListener('load', filterAffordableStoreItems);
 window.addEventListener('load', () => limitDashboardStoreItems(8));
+// Seed default modules for Learn/Admin when none exist
+function seedDefaultModules(){
+  let hasAny = false;
+  try{
+    const existing = JSON.parse(localStorage.getItem('topcit_custom_modules')||'[]');
+    if(Array.isArray(existing) && existing.length) hasAny = true;
+  }catch(_){ hasAny = false; }
+  if(hasAny) return;
+  const defaults = [
+    { id:'intro-programming', title:'Intro to Programming', description:'Start coding with variables, loops, and functions.', difficulty:'Beginner', xp:60, coins:100, image:'images/topics/programming.svg',
+      content:{ bullets:['Syntax & variables','Control flow basics','Functions & reuse'], quiz:{ question:'Which declares a variable in JS?', options:['let','echo','printf'], correctIndex:0 }, reflection:'What did you find tricky at first?' } },
+    { id:'database-basics', title:'Database Basics', description:'Understand tables, keys, and simple SQL queries.', difficulty:'Beginner', xp:70, coins:110, image:'images/topics/databases.svg',
+      content:{ bullets:['Tables & rows','Primary/foreign keys','SELECT/WHERE'], quiz:{ question:'A primary key must be:', options:['Nullable','Unique','Text'], correctIndex:1 }, reflection:'Describe a table and its primary key.' } },
+    { id:'design-patterns', title:'Software Design Patterns', description:'Apply common patterns to improve structure and flexibility.', difficulty:'Intermediate', xp:90, coins:140, image:'images/topics/design.svg',
+      content:{ bullets:['SOLID recap','Factory/Strategy/Observer','Trade-offs'], quiz:{ question:'Which reduces coupling?', options:['Globals','Strategy','Hard-coded deps'], correctIndex:1 }, reflection:'Pick a pattern and when you’d use it.' } },
+    { id:'networking-fundamentals', title:'Networking Fundamentals', description:'Dive into TCP/IP, ports, and basic troubleshooting.', difficulty:'Intermediate', xp:80, coins:120, image:'images/topics/networks.svg',
+      content:{ bullets:['OSI vs TCP/IP','Ports & protocols','Ping & traceroute'], quiz:{ question:'HTTP typically uses port:', options:['21','80','143'], correctIndex:1 }, reflection:'Explain a time you debugged a network issue.' } },
+    { id:'algorithms-mastery', title:'Algorithms Mastery', description:'Optimize with sorting, searching, and complexity analysis.', difficulty:'Advanced', xp:100, coins:160, image:'images/topics/algorithms.svg',
+      content:{ bullets:['Big-O practice','Sorting/searching','Data structures'], quiz:{ question:'Binary search is:', options:['O(n)','O(log n)','O(1)'], correctIndex:1 }, codeFill:{ snippet:'function max(arr){\n  // TODO\n}\n// Expect: max([1,3,2]) === 3', answer:'arr.reduce((m,x)=>x>m?x:m, -Infinity)' } } },
+    { id:'cybersecurity-deep-dive', title:'Cybersecurity Deep Dive', description:'Strengthen authentication and defense with hands-on practice.', difficulty:'Advanced', xp:90, coins:140, image:'images/topics/security.svg',
+      content:{ bullets:['OWASP essentials','Hashing vs encryption','AuthN/AuthZ'], ctf:{ prompt:'Find the hidden flag on the login page.', flag:'TOPCIT{secure_auth}' }, reflection:'List two secure coding practices you’ll adopt.' } }
+  ];
+  try{ localStorage.setItem('topcit_custom_modules', JSON.stringify(defaults)); }catch(_){}
+  try{ localStorage.setItem('topcit_admin_modules', JSON.stringify(defaults)); }catch(_){}
+}
+window.addEventListener('load', seedDefaultModules);
 // Render admin-published custom modules before binding Learn interactions
 function renderCustomModulesIntoAllGrid(){
   const onLearnPage = !!document.querySelector('main .card .learn-grid, [data-completed-grid]');
@@ -1830,6 +1856,7 @@ function renderCustomModulesIntoAllGrid(){
     const coins = Number.isFinite(m.coins) ? m.coins : 0;
     const img = m.image || 'images/topics/programming.svg';
     const desc = m.description || '';
+    const diff = m.difficulty || 'Beginner';
     return `
       <article class="learn-item" data-course-id="${id}">
         <div class="thumb-wrap">
@@ -1837,7 +1864,7 @@ function renderCustomModulesIntoAllGrid(){
         </div>
         <h4>${m.title||'Course'}</h4>
         <p>${desc}</p>
-        <div class="meta"><span class="chip blue">XP ${xp}</span><span class="chip orange">Coins ${coins}</span></div>
+        <div class="meta"><span class="chip purple" data-difficulty>${diff}</span><span class="chip blue">XP ${xp}</span><span class="chip orange">Coins ${coins}</span></div>
         <div class="course-actions">
           <button class="btn primary" data-course-start data-xp="${xp}" data-coins="${coins}">Start</button>
           <button class="btn" data-course-finish data-xp="${xp}" data-coins="${coins}" style="display:none">Finish & claim</button>

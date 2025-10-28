@@ -106,6 +106,14 @@
             <div class="topic-title">Description</div>
             <textarea id="mod-desc" class="text-input" rows="3" placeholder="Short summary..." required></textarea>
           </label>
+          <label>
+            <div class="topic-title">Difficulty</div>
+            <select id="mod-difficulty" class="text-input">
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </label>
           <div class="row">
             <label>
               <div class="topic-title">XP</div>
@@ -179,7 +187,7 @@
           <div class="thumb-wrap"><img class="learn-thumb" src="${m.image||'images/topics/programming.svg'}" alt="${m.title} thumbnail"></div>
           <h4>${m.title}</h4>
           <p>${m.description||''}</p>
-          <div class="meta"><span class="chip blue">XP ${m.xp||0}</span><span class="chip orange">Coins ${m.coins||0}</span></div>
+          <div class="meta"><span class="chip purple" data-difficulty>${m.difficulty||'Beginner'}</span><span class="chip blue">XP ${m.xp||0}</span><span class="chip orange">Coins ${m.coins||0}</span></div>
           <div class="course-actions">
             <button class="btn" data-delete="${idx}">Delete</button>
             <button class="btn" data-publish="${idx}">Publish to Learn</button>
@@ -334,6 +342,8 @@
           const title = (tEl.value||'').trim();
           const id = slugify((idEl.value||title));
           const description = (dEl.value||'').trim();
+          const difficultyEl = document.getElementById('mod-difficulty');
+          const difficulty = (difficultyEl && difficultyEl.value) ? difficultyEl.value : 'Beginner';
           const xp = parseInt(xpEl.value||'0',10)||0;
           const coins = parseInt(cEl.value||'0',10)||0;
           const file = imgFileEl && imgFileEl.files ? imgFileEl.files[0] : null;
@@ -345,10 +355,11 @@
           try { image = await uploadImage(file, id || title || 'course'); } catch(_){ alert('Upload failed. Try again.'); return; }
           if(!title || !description){ return; }
           const mods = readModules();
-          mods.push({ id, title, description, xp, coins, image });
+          mods.push({ id, title, description, xp, coins, image, difficulty });
           saveModules(mods);
           tEl.value = ''; idEl.value = ''; dEl.value = ''; xpEl.value=''; cEl.value='';
           if(imgFileEl) imgFileEl.value = '';
+          if(difficultyEl) difficultyEl.value = 'Beginner';
           renderModules();
         });
       }
