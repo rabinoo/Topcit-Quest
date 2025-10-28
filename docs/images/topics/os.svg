@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#faf5ff"/>
+      <stop offset="1" stop-color="#ede9fe"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#bg)"/>
+  <g stroke="#7c3aed" stroke-width="3" fill="#a78bfa">
+    <rect x="90" y="45" width="140" height="90" rx="10"/>
+    <rect x="100" y="55" width="120" height="10" rx="5" fill="#c4b5fd"/>
+    <circle cx="110" cy="60" r="3" fill="#fff"/>
+    <circle cx="120" cy="60" r="3" fill="#fff"/>
+    <circle cx="130" cy="60" r="3" fill="#fff"/>
+  </g>
+  <text x="160" y="165" font-size="16" text-anchor="middle" fill="#1f2937" font-family="sans-serif">Operating Systems</text>
+</svg>

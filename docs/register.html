@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script defer src="script.js"></script>
 </head>
 <body class="auth-bg">
   <!-- Auth page: header removed -->
@@ -30,12 +31,16 @@
               <input type="text" id="reg-name" class="text-input" placeholder="Your name" required />
             </label>
             <label class="span-6">
+              <div class="topic-title" style="font-size:13px">Username</div>
+              <input type="text" id="reg-username" class="text-input" placeholder="Choose a username" required />
+            </label>
+            <label class="span-6">
               <div class="topic-title" style="font-size:13px">Email</div>
               <input type="email" id="reg-email" class="text-input" placeholder="you@example.com" required />
             </label>
             <label class="span-6">
               <div class="topic-title" style="font-size:13px">Phone Number</div>
-              <input type="tel" id="reg-phone" class="text-input" placeholder="(555) 123-4567" />
+              <input type="tel" id="reg-phone" class="text-input" placeholder="+63 912 345 6789" />
             </label>
             <label class="span-6">
               <div class="topic-title" style="font-size:13px">Password</div>
@@ -84,6 +89,12 @@
       try{ localStorage.setItem('topcit_user', JSON.stringify(user)); }catch(_){ }
     }
     function isValidEmail(v){ return /.+@.+\..+/.test(v) }
+    function isValidUsername(u){ return /^[a-zA-Z0-9_.-]{3,}$/.test(u) }
+    function isValidPhonePH(v){
+      if(!v) return true; // optional
+      return /(\+63\s?9\d{2}\s?\d{3}\s?\d{4}|09\d{2}\s?\d{3}\s?\d{4})$/.test(v.trim());
+    }
+    function setFieldError(el, has){ if(el) el.classList.toggle('error', !!has); }
     
     // Initialize Google OAuth when the page loads
     window.onload = function() {
@@ -123,18 +134,40 @@
     
     document.getElementById('register-form').addEventListener('submit', function(e){
       e.preventDefault();
-      const name = document.getElementById('reg-name').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const phone = document.getElementById('reg-phone').value.trim();
-      const pass = document.getElementById('reg-password').value.trim();
-      const conf = document.getElementById('reg-confirm').value.trim();
+      const nameEl = document.getElementById('reg-name');
+      const userEl = document.getElementById('reg-username');
+      const emailEl = document.getElementById('reg-email');
+      const phoneEl = document.getElementById('reg-phone');
+      const passEl = document.getElementById('reg-password');
+      const confEl = document.getElementById('reg-confirm');
       const err = document.getElementById('register-error');
+
+      const name = nameEl.value.trim();
+      const username = userEl.value.trim();
+      const email = emailEl.value.trim();
+      const phone = phoneEl.value.trim();
+      const pass = passEl.value;
+      const conf = confEl.value;
+
+      const errors = [];
+      [nameEl,userEl,emailEl,phoneEl,passEl,confEl].forEach(el=>setFieldError(el,false));
       err.style.display = 'none';
-      if(!name || !isValidEmail(email) || pass.length < 6 || pass !== conf){
-        err.style.display = 'block';
-        return;
-      }
-      saveUser({ name, email, phone, provider: 'local' });
+      err.innerHTML = '';
+
+      if(!name){ errors.push('Full name is required.'); setFieldError(nameEl,true); }
+      if(!username){ errors.push('Username is required.'); setFieldError(userEl,true); }
+      else if(!isValidUsername(username)){ errors.push('Username must be 3+ characters (letters, numbers, ., _, -).'); setFieldError(userEl,true); }
+      if(!email){ errors.push('Email is required.'); setFieldError(emailEl,true); }
+      else if(!isValidEmail(email)){ errors.push('Enter a valid email address.'); setFieldError(emailEl,true); }
+      if(phone && !isValidPhonePH(phone)){ errors.push('Phone should be PH format: +63 9XX XXX XXXX or 09XX XXX XXXX.'); setFieldError(phoneEl,true); }
+      if(!pass){ errors.push('Password is required.'); setFieldError(passEl,true); }
+      else if(pass.length < 6){ errors.push('Password must be at least 6 characters.'); setFieldError(passEl,true); }
+      if(!conf){ errors.push('Please confirm your password.'); setFieldError(confEl,true); }
+      else if(pass !== conf){ errors.push('Passwords do not match.'); setFieldError(confEl,true); }
+
+      if(errors.length){ err.innerHTML = errors.join('<br>'); err.style.display = 'block'; return; }
+
+      saveUser({ name, username, email, phone, provider: 'local' });
       try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){ }
       window.location.href = 'index.html';
     });

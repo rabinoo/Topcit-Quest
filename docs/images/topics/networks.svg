@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0f9ff"/>
+      <stop offset="1" stop-color="#bae6fd"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="180" fill="url(#bg)"/>
+  <g stroke="#0284c7" stroke-width="3" fill="#7dd3fc">
+    <circle cx="80" cy="90" r="18"/>
+    <circle cx="160" cy="50" r="18"/>
+    <circle cx="240" cy="90" r="18"/>
+    <circle cx="160" cy="130" r="18"/>
+    <line x1="80" y1="90" x2="160" y2="50"/>
+    <line x1="160" y1="50" x2="240" y2="90"/>
+    <line x1="80" y1="90" x2="160" y2="130"/>
+    <line x1="160" y1="130" x2="240" y2="90"/>
+  </g>
+  <text x="160" y="165" font-size="16" text-anchor="middle" fill="#1f2937" font-family="sans-serif">Networking Fundamentals</text>
+</svg>

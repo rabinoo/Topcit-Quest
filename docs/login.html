@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script defer src="script.js"></script>
 </head>
 <body class="auth-bg">
   <!-- Auth page: header removed -->
@@ -28,7 +29,7 @@
           <div style="display:grid;gap:12px">
             <label>
               <div class="topic-title" style="font-size:13px">Username or Email</div>
-              <input type="text" id="login-username" class="text-input" placeholder="yourname or you@example.com" required />
+              <input type="text" id="login-username" class="text-input" placeholder="Enter your username or email" required />
             </label>
             <label>
               <div class="topic-title" style="font-size:13px">Password</div>
@@ -63,6 +64,8 @@
       try{ localStorage.setItem('topcit_user', JSON.stringify(user)); }catch(_){}
     }
     function isValid(str){ return typeof str === 'string' && str.trim().length > 0 }
+    function isValidEmail(v){ return /.+@.+\..+/.test(v) }
+    function setFieldError(el, has){ if(el) el.classList.toggle('error', !!has); }
     
     // Initialize Google OAuth when the page loads
     window.onload = function() {
@@ -102,13 +105,32 @@
     
     document.getElementById('login-form').addEventListener('submit', function(e){
       e.preventDefault();
-      const u = document.getElementById('login-username').value.trim();
-      const p = document.getElementById('login-password').value.trim();
-      if(!isValid(u) || !isValid(p)){
-        document.getElementById('login-error').style.display = 'block';
-        return;
-      }
-      saveUser({ name: u, email: u.includes('@') ? u : '', provider: 'local' });
+      const uEl = document.getElementById('login-username');
+      const pEl = document.getElementById('login-password');
+      const u = uEl.value.trim();
+      const p = pEl.value;
+      const err = document.getElementById('login-error');
+      err.style.display = 'none';
+      err.innerHTML = '';
+      setFieldError(uEl,false); setFieldError(pEl,false);
+
+      const errors = [];
+      if(!isValid(u)){ errors.push('Enter your username or email.'); setFieldError(uEl,true); }
+      else if(u.includes('@') && !isValidEmail(u)){ errors.push('Enter a valid email address.'); setFieldError(uEl,true); }
+      if(!isValid(p)){ errors.push('Password is required.'); setFieldError(pEl,true); }
+      else if(p.length < 6){ errors.push('Password must be at least 6 characters.'); setFieldError(pEl,true); }
+
+      if(errors.length){ err.innerHTML = errors.join('<br>'); err.style.display = 'block'; return; }
+
+      // Preserve full name if previously registered, allow login via username or email
+      let existing = null;
+      try{ const raw = localStorage.getItem('topcit_user'); existing = raw ? JSON.parse(raw) : null; }catch(_){ existing = null; }
+      const isEmail = u.includes('@');
+      const next = Object.assign({}, existing || {});
+      next.provider = 'local';
+      if(isEmail){ next.email = u; } else { next.username = u; }
+      if(!next.name){ next.name = isEmail ? (existing?.name || u) : (existing?.name || next.username || u); }
+      saveUser(next);
       try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){}
       window.location.href = 'index.html';
     });

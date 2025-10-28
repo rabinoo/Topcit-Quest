@@ -2,6 +2,7 @@
 (function(){
   const levelOrder = ["Novice","Coder","Debugger","System Architect","TOPCIT Master"]; // legacy; no longer used for labels
   const progressBar = document.querySelector('[data-progress-bar]');
+  const progressPercentEl = document.querySelector('[data-progress-percent]');
   const currentLevelEl = document.querySelector('[data-current-level]');
   const nextLevelEl = document.querySelector('[data-next-level]');
   const gainedXpEl = document.querySelector('[data-gained-xp]');
@@ -50,7 +51,11 @@
     xpInLevel = remaining;
     saveProgress();
   }
-  function setPercent(p){ if(progressBar){ progressBar.style.width = `${Math.max(0, Math.min(100, p))}%`; } }
+  function setPercent(p){
+    const pct = Math.max(0, Math.min(100, p));
+    if(progressBar){ progressBar.style.width = `${pct}%`; }
+    if(progressPercentEl){ progressPercentEl.textContent = `${pct}%`; }
+  }
   function setLevel(idx){
     const rank = Math.max(0, Math.min(MAX_RANK-1, idx)) + 1;
     const threshold = requiredXpForRank(rank);
@@ -406,7 +411,9 @@
     return m ? parseInt(m[1],10) : 0;
   }
   function setPercent(p){
-    if(progressBar){ progressBar.style.width = `${Math.max(0, Math.min(100, p))}%`; }
+    const pct = Math.max(0, Math.min(100, Math.floor(p)));
+    if(progressBar){ progressBar.style.width = `${pct}%`; }
+    if(progressPercentEl){ progressPercentEl.textContent = `${pct}%`; }
   }
   function getLevelIndex(){
     const txt = (currentLevelEl?.textContent || '').trim();
@@ -591,26 +598,25 @@
       const cost = parseInt(el.getAttribute('data-cost') || '0', 10);
       const btn = el.querySelector('button');
       const affordable = have >= cost;
+      // Dashboard should show ONLY affordable rewards
       el.classList.toggle('locked', !affordable);
       if(btn) btn.disabled = !affordable;
       el.style.display = affordable ? '' : 'none';
-      
-      if (affordable) {
-        hasAffordableItems = true;
-      }
+      if (affordable) hasAffordableItems = true;
     });
 
     // Show/hide empty message based on affordable items
     const storeItems = document.getElementById('store-items');
     const emptyMessage = document.getElementById('empty-store-message');
     
+    // Show grid only when there are affordable items
     if (storeItems && emptyMessage) {
       if (hasAffordableItems) {
         storeItems.style.display = '';
         emptyMessage.style.display = 'none';
       } else {
         storeItems.style.display = 'none';
-        emptyMessage.style.display = 'flex';
+        emptyMessage.style.display = '';
       }
     }
   }
@@ -685,24 +691,41 @@
   function setupLearnCourses(){
     const onLearnPage = !!document.querySelector('main .card .learn-grid, [data-completed-grid]');
     if(!onLearnPage) return; // Only run on Learn page
-  
+
     // Populate the Completed tab first so we can bind events on clones too
     populateCompletedGrid();
-  
+
     const grids = Array.from(document.querySelectorAll('.learn-grid'));
     grids.forEach(grid => {
       const items = Array.from(grid.querySelectorAll('.learn-item'));
       items.forEach(item => {
         const id = item.getAttribute('data-course-id') || '';
+        const meta = item.querySelector('.meta');
+        // Clean any previous card-level meta and progress (we now show these in the preview)
+        if(meta){
+          meta.querySelectorAll('.chip.purple, .chip.gray:not([data-ongoing]), .chip.subtle').forEach(el => el.remove());
+        }
+        const existingProgress = item.querySelector('.progress');
+        if(existingProgress) existingProgress.remove();
         // Mark completed visually and add a chip
         if(isCourseCompleted(id)){
           item.classList.add('completed');
-          const meta = item.querySelector('.meta');
           if(meta && !meta.querySelector('.chip.green')){
             const doneChip = document.createElement('span');
             doneChip.className = 'chip green';
             doneChip.textContent = 'Completed';
             meta.appendChild(doneChip);
+          }
+        }
+        // Ongoing chip
+        const ongoing = getOngoingCourses();
+        if(ongoing.includes(id)){
+          if(meta && !meta.querySelector('.chip.gray[data-ongoing]')){
+            const doingChip = document.createElement('span');
+            doingChip.className = 'chip gray';
+            doingChip.textContent = 'In Progress';
+            doingChip.setAttribute('data-ongoing','');
+            meta.appendChild(doingChip);
           }
         }
         const startBtn = item.querySelector('[data-course-start]');
@@ -725,6 +748,198 @@
         });
       });
     });
+  }
+
+  // Hover preview modal for Learn page
+  function setupLearnPreviews(){
+    const onLearnPage = !!document.querySelector('main .card .learn-grid, [data-completed-grid]');
+    if(!onLearnPage) return; // Only run on Learn page
+
+    // Create single floating preview element
+    let preview = document.getElementById('course-preview');
+    if(!preview){
+      preview = document.createElement('div');
+      preview.id = 'course-preview';
+      preview.className = 'course-preview';
+      preview.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(preview);
+    }
+    let currentItem = null;
+
+    function hidePreview(){
+      preview.classList.remove('visible');
+      preview.setAttribute('aria-hidden','true');
+      currentItem = null;
+    }
+    function positionPreviewNear(rect){
+      const pad = 12;
+      const viewportW = window.innerWidth;
+      const viewportH = window.innerHeight;
+      const hPref = (document.body.getAttribute('data-preview-anchor')||'auto-right').toLowerCase();
+      const vPref = (document.body.getAttribute('data-preview-vertical')||'above').toLowerCase();
+      // Optional vertical nudge to lower the preview a bit when anchored above
+      const nudgeY = parseInt(document.body.getAttribute('data-preview-nudge-y')||'8', 10);
+      // Detect sticky header height to avoid overlap
+      const headerSelectors = ['header','nav','.topbar','.navbar','.app-header'];
+      let headerOffset = 0;
+      for(const sel of headerSelectors){
+        const el = document.querySelector(sel);
+        if(!el) continue;
+        const r = el.getBoundingClientRect();
+        // If occupying the top of viewport (likely sticky/fixed)
+        if(r.top <= 0 && r.bottom > 0){
+          headerOffset = Math.max(headerOffset, r.bottom);
+        }
+      }
+      // Constrain height ONLY if content exceeds viewport; otherwise avoid scrollbars
+      const availableH = Math.max(160, viewportH - headerOffset - 24);
+      const contentH = preview.scrollHeight;
+      if(contentH > availableH){
+        preview.style.maxHeight = availableH + 'px';
+        preview.style.overflow = 'hidden';
+      } else {
+        preview.style.maxHeight = '';
+        preview.style.overflow = 'visible';
+      }
+      const tryRight = hPref === 'right' || hPref === 'auto-right';
+      let left;
+      let horizAnchor = 'left';
+      // Horizontal anchoring with smart fallback (viewport-fixed coordinates)
+      if(tryRight && hPref !== 'auto-left'){
+        left = rect.right + pad;
+        if(left + preview.offsetWidth > viewportW - 8){
+          left = rect.left - preview.offsetWidth - pad;
+          horizAnchor = 'left';
+        } else {
+          horizAnchor = 'right';
+        }
+      } else {
+        left = rect.left - preview.offsetWidth - pad;
+        if(left < 8 && (hPref === 'auto-left' || hPref === 'auto-right')){
+          left = rect.right + pad;
+          horizAnchor = 'right';
+        } else {
+          horizAnchor = 'left';
+        }
+      }
+      const minTop = headerOffset + 8;
+      const maxTop = viewportH - preview.offsetHeight - 8;
+      const aboveTop = rect.top - preview.offsetHeight - pad;
+      const belowTop = rect.bottom + pad;
+      const centerTop = rect.top + Math.max(0, (rect.height - preview.offsetHeight)/2);
+      let top;
+      // Vertical anchoring with smart fallback (default: above). If 'auto', pick side with more space.
+      if(vPref === 'auto'){
+        const spaceAbove = Math.max(0, rect.top - (headerOffset + 8) - pad);
+        const spaceBelow = Math.max(0, viewportH - rect.bottom - pad);
+        if(spaceAbove >= preview.offsetHeight || spaceAbove >= spaceBelow){
+          top = aboveTop;
+          if(top < minTop) top = belowTop;
+        } else {
+          top = belowTop;
+          if(top > maxTop) top = aboveTop;
+        }
+      } else if(vPref === 'above' || vPref === 'auto-above'){
+        // Strict above with a small downward nudge
+        top = aboveTop + Math.max(0, nudgeY);
+      } else if(vPref === 'below' || vPref === 'auto-below'){
+        // Strict below: no flip, rely on clamping
+        top = belowTop;
+      } else {
+        top = centerTop;
+      }
+      top = Math.min(Math.max(top, minTop), maxTop);
+      // Ensure no conflicting sides are set
+      preview.style.right = '';
+      preview.style.bottom = '';
+      preview.style.left = left + 'px';
+      preview.style.top = top + 'px';
+      // Toggle anchor classes for styling (caret orientation)
+      const vertAnchor = (top <= aboveTop + Math.max(0, nudgeY) + 0.5) ? 'above' : (top >= belowTop - 0.5 ? 'below' : (vPref.startsWith('auto') ? (top < rect.top ? 'above' : 'below') : (vPref || 'above')));
+      preview.classList.toggle('anchor-right', horizAnchor === 'right');
+      preview.classList.toggle('anchor-left', horizAnchor === 'left');
+      preview.classList.toggle('anchor-above', vertAnchor === 'above');
+      preview.classList.toggle('anchor-below', vertAnchor === 'below');
+      // Compute caret X to point at the hovered card center
+      const itemCenterX = (rect.left + rect.right) / 2;
+      const caretX = Math.min(Math.max(itemCenterX - left, 16), preview.offsetWidth - 16);
+      preview.style.setProperty('--caret-x', Math.round(caretX) + 'px');
+    }
+    function normalizeTitle(t){
+      return (t||'').toLowerCase().replace(/\s+/g,' ').trim();
+    }
+    const previewTeasers = {
+      'requirements engineering': { teaser: 'Peek: shape scope with stories and constraints.', points: ['Write SMART requirements','Derive acceptance criteria','Draft a MoSCoW backlog'] },
+      'software design & architecture': { teaser: 'Peek: craft boundaries and choose effective patterns.', points: ['Select layered or hexagonal style','Identify domain aggregates','Sketch a key sequence'] },
+      'programming fundamentals': { teaser: 'Peek: practice core constructs through guided tasks.', points: ['Implement iterative Fibonacci','Refactor loops to functions','Debug off-by-one errors'] },
+      'database modeling': { teaser: 'Peek: model data thoughtfully for real queries.', points: ['Normalize to 3NF','Design useful indexes','Write joins for reports'] },
+      'networking fundamentals': { teaser: 'Peek: follow packets and protocols end-to-end.', points: ['Trace a TCP handshake','Compare HTTP/1.1 vs HTTP/2','Decode a DNS answer'] },
+      'operating systems': { teaser: 'Peek: reason about processes and memory.', points: ['Explain a context switch','Diagnose CPU starvation','Inspect paging behavior'] },
+      'algorithms & data structures': { teaser: 'Peek: pick structures for performance.', points: ['Choose DS for O(log n)','Dry-run BFS vs DFS','Balance time vs space'] },
+      'cybersecurity essentials': { teaser: 'Peek: identify threats and mitigations.', points: ['Threat-model a login flow','Hash + salt secrets','Spot XSS patterns'] },
+      'cloud computing basics': { teaser: 'Peek: deploy stateless services and observe.', points: ['Containerize and run locally','Define health checks','Sketch autoscaling policy'] },
+      'web security ctf': { teaser: 'Peek: exploit then patch a demo app.', points: ['Trigger SQLi payload','Bypass weak auth','Write a fix PR'] },
+      'code completion challenge': { teaser: 'Peek: fill in code under constraints.', points: ['Implement missing function','Add unit tests','Optimize readability'] }
+    };
+    function getTeaserForItem(item){
+      const title = (item.querySelector('h4')?.textContent || '').trim();
+      const key = normalizeTitle(title);
+      const data = previewTeasers[key] || {teaser:'Explore key concepts with interactive tasks.', points:['Hands-on exercises','Targeted hints','Immediate feedback']};
+      return {title, ...data};
+    }
+  function showPreviewForItem(item){
+      const data = getTeaserForItem(item);
+      const id = item.getAttribute('data-course-id')||'';
+      const rewards = getCourseRewards(id);
+      const bullets = Array.from(item.querySelectorAll('.course-content li'));
+      const modules = bullets.length || 3;
+      const ongoing = getOngoingCourses();
+      let pct = 0;
+      if(isCourseCompleted(id)) pct = 100; else if(ongoing.includes(id)) pct = 50;
+      const diffMap = { requirements:'Beginner', programming:'Beginner', databases:'Beginner', networks:'Intermediate', os:'Intermediate', design:'Intermediate', algorithms:'Advanced', security:'Intermediate', cloud:'Intermediate' };
+      const durMap = { requirements:'45m', programming:'50m', databases:'55m', networks:'60m', os:'60m', design:'70m', algorithms:'80m', security:'70m', cloud:'50m' };
+      preview.innerHTML = `
+        <div class="accent" aria-hidden="true"></div>
+        <div class="title">${data.title}</div>
+        <div class="desc">${data.teaser}</div>
+        <div class="chips">
+          <span class="chip blue">XP ${rewards.xp}</span>
+          <span class="chip orange">Coins ${rewards.coins}</span>
+          <span class="chip purple">${diffMap[id]||'Intermediate'}</span>
+          <span class="chip gray">${durMap[id]||'60m'}</span>
+          <span class="chip subtle">${modules} modules</span>
+        </div>
+        <div class="progress"><div class="bar" style="width:${pct}%"></div><div class="label">${pct}%</div></div>
+        <ul>${data.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+      `;
+      preview.setAttribute('aria-hidden','false');
+      preview.classList.add('visible');
+      currentItem = item;
+      positionPreviewNear(item.getBoundingClientRect());
+    }
+    function bindPreviews(container){
+      const items = Array.from(container.querySelectorAll('.learn-item'));
+      items.forEach(item => {
+        if(item.dataset.boundPreview) return;
+        item.dataset.boundPreview = '1';
+        item.addEventListener('mouseenter', ()=> showPreviewForItem(item));
+        item.addEventListener('mouseleave', hidePreview);
+        item.addEventListener('focus', ()=> showPreviewForItem(item));
+        item.addEventListener('blur', hidePreview);
+      });
+    }
+    const allGrid = document.querySelector('[data-all-grid]') || document.querySelector('.learn-grid');
+    const completedGrid = document.querySelector('[data-completed-grid]');
+    if(allGrid) bindPreviews(allGrid);
+    if(completedGrid){
+      bindPreviews(completedGrid);
+      // Observe changes to re-bind when completed grid is rebuilt
+      const obs = new MutationObserver(()=> bindPreviews(completedGrid));
+      obs.observe(completedGrid, {childList:true, subtree:true});
+    }
+    const reposition = ()=>{ if(preview.classList.contains('visible') && currentItem){ positionPreviewNear(currentItem.getBoundingClientRect()); } };
+    window.addEventListener('scroll', reposition);
+    window.addEventListener('resize', reposition);
   }
 
   // Build the Completed Courses tab by cloning items from the All grid
@@ -787,15 +1002,68 @@
     const allGrid = document.querySelector('[data-all-grid]') || document.querySelector('.learn-grid');
     const completedGrid = document.querySelector('[data-completed-grid]');
     const tabs = Array.from(tabsWrap.querySelectorAll('.sub-tab'));
+    const indicator = tabsWrap.querySelector('.indicator');
+    const countAllEl = tabsWrap.querySelector('[data-tab-count="all"]');
+    const countCompletedEl = tabsWrap.querySelector('[data-tab-count="completed"]');
+
+    function updateCounts(){
+      const allCount = (allGrid ? allGrid.querySelectorAll('.learn-item').length : 0);
+      const completedCount = (completedGrid ? completedGrid.querySelectorAll('.learn-item').length : 0);
+      if(countAllEl) countAllEl.textContent = allCount > 0 ? allCount : '';
+      if(countCompletedEl) countCompletedEl.textContent = completedCount > 0 ? completedCount : '';
+    }
+
+    function moveIndicatorTo(btn){
+      if(!indicator || !btn) return;
+      const rWrap = tabsWrap.getBoundingClientRect();
+      const r = btn.getBoundingClientRect();
+      const left = r.left - rWrap.left;
+      indicator.style.width = Math.max(24, r.width - 16) + 'px';
+      indicator.style.transform = `translateX(${Math.round(left + 8)}px)`;
+    }
+
     function activate(name){
-      tabs.forEach(btn => btn.classList.toggle('active', (btn.getAttribute('data-tab')||'all') === name));
+      tabs.forEach(btn => {
+        const isActive = (btn.getAttribute('data-tab')||'all') === name;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        if(isActive) moveIndicatorTo(btn);
+      });
       if(allGrid) allGrid.style.display = name === 'all' ? '' : 'none';
       if(completedGrid) completedGrid.style.display = name === 'completed' ? '' : 'none';
+      try{ localStorage.setItem('learnTab', name); }catch{}
+      updateCounts();
     }
+
     tabs.forEach(btn => {
       btn.addEventListener('click', ()=> activate(btn.getAttribute('data-tab') || 'all'));
+      btn.addEventListener('keydown', (e)=>{
+        const idx = tabs.indexOf(btn);
+        if(e.key === 'ArrowRight'){
+          e.preventDefault();
+          const n = tabs[Math.min(tabs.length-1, idx+1)];
+          if(n){ n.focus(); activate(n.getAttribute('data-tab')||'all'); }
+        } else if(e.key === 'ArrowLeft'){
+          e.preventDefault();
+          const p = tabs[Math.max(0, idx-1)];
+          if(p){ p.focus(); activate(p.getAttribute('data-tab')||'all'); }
+        } else if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          activate(btn.getAttribute('data-tab') || 'all');
+        }
+      });
     });
-    activate('all');
+
+    // Initialize with persisted selection if any
+    let initial = 'all';
+    try{ initial = localStorage.getItem('learnTab') || 'all'; }catch{}
+    activate(initial);
+
+    // Keep counts updated when completed grid changes
+    if(completedGrid){
+      const obsCounts = new MutationObserver(updateCounts);
+      obsCounts.observe(completedGrid, {childList:true, subtree:true});
+    }
   }
 
   // Dashboard materials sync
@@ -1145,6 +1413,17 @@ function applyHeaderAvatar(profile){
   const user = getAuthUser();
   const googlePicture = user?.picture;
   const localAvatar = profile?.avatar;
+  const displayName = user?.name || profile?.name || user?.username || '';
+  function guessGender(name){
+    const first = String(name||'').toLowerCase().split(/\s+/)[0];
+    const female = ['anne','marie','mina','trisha','linh','anne-marie','annemarie'];
+    const male = ['aarav','noah','josh','marc','daniel','patrick','roland','jan','kennely','jermin','michael','marco','ray'];
+    if(female.includes(first)) return 'female';
+    if(male.includes(first)) return 'male';
+    // simple heuristic fallback
+    return first.endsWith('a') ? 'female' : 'male';
+  }
+  const fallbackAvatar = guessGender(displayName) === 'female' ? 'images/female-profile.png' : 'images/male-profile.png';
   
   const imageUrl = googlePicture || localAvatar;
   
@@ -1160,8 +1439,8 @@ function applyHeaderAvatar(profile){
     avatarEl.innerHTML = '';
     avatarEl.appendChild(img);
   } else {
-    // Fallback to default emoji if no image available
-    avatarEl.innerHTML = '👩‍💻';
+    // Fallback to gendered default if no image available
+    avatarEl.innerHTML = `<img class="avatar-icon" alt="Profile avatar" src="${fallbackAvatar}">`;
   }
 }
 function buildProfileModal(){
@@ -1180,7 +1459,7 @@ function buildProfileModal(){
     <div class="body">
       <form class="profile-form" id="profile-form">
         <div class="field span-2 avatar-preview">
-          <div class="pic" id="profile-avatar-preview"><span class="ms">account_circle</span></div>
+  <div class="pic" id="profile-avatar-preview"><img class="avatar-icon" src="images/male-profile.png" alt="Avatar"></div>
           <div>
             <label for="profile-avatar">Profile Picture</label>
             <input type="file" id="profile-avatar" accept="image/*">
@@ -1262,7 +1541,14 @@ function openProfileModal(){
   
   // Show Google profile picture if available, otherwise local avatar
   const imageUrl = user?.picture || p.avatar;
-  preview.innerHTML = imageUrl ? `<img alt="avatar" src="${imageUrl}">` : '<span class="ms">account_circle</span>';
+  const displayName = user?.name || p.name || '';
+  const fallback = (function(){
+    const first = String(displayName||'').toLowerCase().split(/\s+/)[0];
+    const female = ['anne','marie','mina','trisha','linh','anne-marie','annemarie'];
+    if(female.includes(first) || first.endsWith('a')) return 'images/female-profile.png';
+    return 'images/male-profile.png';
+  })();
+  preview.innerHTML = imageUrl ? `<img class="avatar-icon" alt="avatar" src="${imageUrl}">` : `<img class="avatar-icon" alt="avatar" src="${fallback}">`;
   
   // Stats
   const walletEl = modal.querySelector('#profile-wallet');
@@ -1329,6 +1615,99 @@ function enforceAuthLanding(){
 
 // Run early to avoid flash of protected pages
 window.addEventListener('DOMContentLoaded', enforceAuthLanding);
+
+// ---- Theme Preference & Settings Modal ----
+const THEME_KEY = 'topcit_theme';
+function getSavedTheme(){
+  // Default to dark theme when no preference is saved
+  try{ return localStorage.getItem(THEME_KEY) || 'dark'; }catch(_){ return 'dark'; }
+}
+function applyTheme(theme){
+  const root = document.documentElement;
+  const sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const next = theme || getSavedTheme();
+  if(next === 'dark'){
+    root.setAttribute('data-theme','dark');
+    root.style.colorScheme = 'dark';
+  }else if(next === 'light'){
+    root.setAttribute('data-theme','light');
+    root.style.colorScheme = 'light';
+  }else{ // system
+    root.removeAttribute('data-theme');
+    root.style.colorScheme = sysDark ? 'dark' : 'light';
+  }
+  try{ localStorage.setItem(THEME_KEY, next); }catch(_){}
+}
+function applyInitialTheme(){ applyTheme(getSavedTheme()); }
+// React to system changes when in system mode
+window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', (e)=>{
+  if(getSavedTheme() === 'system'){
+    const root = document.documentElement;
+    root.style.colorScheme = e.matches ? 'dark' : 'light';
+  }
+});
+
+function buildSettingsModal(){
+  if(document.getElementById('settings-backdrop')) return; // already built
+  const backdrop = document.createElement('div');
+  backdrop.className = 'modal-backdrop';
+  backdrop.id = 'settings-backdrop';
+  backdrop.setAttribute('role','dialog');
+  backdrop.setAttribute('aria-modal','true');
+  backdrop.innerHTML = `
+    <div class="modal card" id="settings-modal">
+      <div class="modal-head"><h3>Settings</h3></div>
+      <div class="modal-body">
+        <div class="field" style="display:flex;flex-direction:column;gap:8px">
+          <label style="font-weight:700;color:var(--muted)">Theme</label>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label><input type="radio" name="theme-pref" value="light"> Light</label>
+            <label><input type="radio" name="theme-pref" value="dark"> Dark</label>
+            <label><input type="radio" name="theme-pref" value="system"> System</label>
+          </div>
+          <small class="muted">Choose between light, dark, or follow your device.</small>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn" data-close>Close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(backdrop);
+  // Close handlers
+  function close(){ backdrop.classList.remove('open'); }
+  backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop) close(); });
+  backdrop.querySelector('[data-close]')?.addEventListener('click', close);
+  // Escape key to close
+  document.addEventListener('keydown', function handler(ev){
+    if(ev.key === 'Escape'){ close(); document.removeEventListener('keydown', handler); }
+  });
+}
+function openSettingsModal(){
+  buildSettingsModal();
+  const backdrop = document.getElementById('settings-backdrop');
+  const modal = backdrop?.querySelector('#settings-modal');
+  if(!backdrop || !modal) return;
+  // Set current selection
+  const current = getSavedTheme();
+  const radios = Array.from(modal.querySelectorAll('input[name="theme-pref"]'));
+  radios.forEach(r => { r.checked = (r.value === current); });
+  // Bind change
+  radios.forEach(r => r.addEventListener('change', (e)=>{
+    const val = (e.target instanceof HTMLInputElement) ? e.target.value : 'system';
+    applyTheme(val);
+  }));
+  backdrop.classList.add('open');
+}
+function setupSettingsModal(){
+  buildSettingsModal();
+  // Bind Settings toggle from user menu
+  const dropdown = document.getElementById('user-dropdown');
+  if(dropdown){
+    const items = Array.from(dropdown.querySelectorAll('.menu-item'));
+    const settingsBtn = items.find(b => (b.textContent||'').toLowerCase().includes('settings'));
+    settingsBtn?.addEventListener('click', openSettingsModal);
+  }
+}
 
 function showConfirmModal(opts){
   const { title = 'Confirm', message = '', confirmText = 'OK', cancelText = 'Cancel', onConfirm = ()=>{}, onCancel = ()=>{} } = opts || {};
@@ -1412,15 +1791,22 @@ window.addEventListener('load', setupCoursePage);
 window.addEventListener('load', revealCharts);
 window.addEventListener('load', animateRings);
 window.addEventListener('load', filterAffordableStoreItems);
-window.addEventListener('load', () => limitDashboardStoreItems());
+window.addEventListener('load', () => limitDashboardStoreItems(8));
 window.addEventListener('load', setupLearnCourses);
 window.addEventListener('load', setupLearnTabs);
+window.addEventListener('load', setupLearnPreviews);
 window.addEventListener('load', setupDashboardMaterials);
 window.addEventListener('load', setupTopicsSection);
 window.addEventListener('load', initNotificationSystem);
 window.addEventListener('load', setupLogout);
 window.addEventListener('load', showLoginLogoutNotice);
 window.addEventListener('load', setupLogoHome);
+// Apply theme immediately to minimize flash of incorrect theme
+applyInitialTheme();
+// Ensure Settings and Profile modals are bound on all pages
+window.addEventListener('load', setupSettingsModal);
+window.addEventListener('load', setupProfileModal);
+window.addEventListener('load', setupSettingsModal);
 // Final guard on load as well
 window.addEventListener('load', enforceAuthLanding);
 // Wallet init & tamper guard

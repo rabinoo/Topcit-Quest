@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="style.css" />
     <script defer src="script.js"></script>
 </head>
-<body>
+<body data-preview-nudge-y="250">
     <header class="app-header">
         <div class="header-top">
             <div class="brand">
@@ -30,9 +30,9 @@
             <nav class="header-controls" aria-label="User controls">
                 <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim ms">local_fire_department</span><span class="streak-num">7</span><span>day streak</span></div>
                 <button class="icon-btn" id="notify-btn" aria-label="Notifications"><span class="ms">notifications</span><span class="dot-badge" aria-hidden="true"></span></button>
-                <div class="wallet chip" title="Your coins"><span class="coin-icon ms">monetization_on</span><span class="amount" data-wallet-amount>1,260</span></div>
+    <div class="wallet chip" title="Your coins"><img class="coin-icon" src="images/coin.png" alt="Coins"><span class="amount" data-wallet-amount>1,260</span></div>
                 <div class="user-menu">
-                    <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false">
+                    <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false" title="Open profile & settings">
                         <span class="avatar">👩‍💻</span>
                     </button>
                     <div class="menu" id="user-dropdown" role="menu" aria-hidden="true">
@@ -51,13 +51,23 @@
                 <h3>TOPCIT Courses</h3>
                 <span class="chip subtle">Complete courses to earn XP & coins</span>
             </div>
-            <div class="sub-tabs" data-sub-tabs>
-                <button class="sub-tab active" data-tab="all">All Courses</button>
-                <button class="sub-tab" data-tab="completed">Completed Courses</button>
+            <div class="sub-tabs" data-sub-tabs role="tablist" aria-label="Course filter">
+                <button class="sub-tab active" data-tab="all" role="tab" aria-selected="true">
+                    <span class="ms">menu_book</span>
+                    <span class="label">All Courses</span>
+                    <span class="count" data-tab-count="all"></span>
+                </button>
+                <button class="sub-tab" data-tab="completed" role="tab" aria-selected="false">
+                    <span class="ms">check_circle</span>
+                    <span class="label">Completed Courses</span>
+                    <span class="count" data-tab-count="completed"></span>
+                </button>
+                <div class="indicator" aria-hidden="true"></div>
             </div>
             <div class="learn-grid" data-all-grid>
                 <!-- Requirements Engineering -->
                 <article class="learn-item" data-course-id="requirements">
+                    <img class="learn-thumb" src="images/topics/requirements.svg" alt="Requirements Engineering thumbnail">
                     <h4>Requirements Engineering</h4>
                     <p>Learn to gather, analyze, and validate software requirements for reliable systems.</p>
                     <div class="meta"><span class="chip blue">XP 80</span><span class="chip orange">Coins 120</span></div>
@@ -76,6 +86,7 @@
 
                 <!-- Software Design -->
                 <article class="learn-item" data-course-id="design">
+                    <img class="learn-thumb" src="images/topics/design.svg" alt="Software Design & Architecture thumbnail">
                     <h4>Software Design & Architecture</h4>
                     <p>Explore design principles, patterns, and architecture trade-offs.</p>
                     <div class="meta"><span class="chip blue">XP 90</span><span class="chip orange">Coins 140</span></div>
@@ -94,6 +105,7 @@
 
                 <!-- Programming -->
                 <article class="learn-item" data-course-id="programming">
+                    <img class="learn-thumb" src="images/topics/programming.svg" alt="Programming Fundamentals thumbnail">
                     <h4>Programming Fundamentals</h4>
                     <p>Core constructs, data types, control flow, and problem solving.</p>
                     <div class="meta"><span class="chip blue">XP 60</span><span class="chip orange">Coins 100</span></div>
@@ -112,6 +124,7 @@
 
                 <!-- Databases -->
                 <article class="learn-item" data-course-id="databases">
+                    <img class="learn-thumb" src="images/topics/databases.svg" alt="Database Modeling thumbnail">
                     <h4>Database Modeling</h4>
                     <p>Relational modeling, normalization, and SQL fundamentals.</p>
                     <div class="meta"><span class="chip blue">XP 70</span><span class="chip orange">Coins 110</span></div>
@@ -130,6 +143,7 @@
 
                 <!-- Networks -->
                 <article class="learn-item" data-course-id="networks">
+                    <img class="learn-thumb" src="images/topics/networks.svg" alt="Networking Fundamentals thumbnail">
                     <h4>Networking Fundamentals</h4>
                     <p>Understand the Internet stack, addressing, routing, and protocols.</p>
                     <div class="meta"><span class="chip blue">XP 60</span><span class="chip orange">Coins 100</span></div>
@@ -148,6 +162,7 @@
 
                 <!-- OS -->
                 <article class="learn-item" data-course-id="os">
+                    <img class="learn-thumb" src="images/topics/os.svg" alt="Operating Systems thumbnail">
                     <h4>Operating Systems</h4>
                     <p>Processes, threads, memory, scheduling, and filesystems.</p>
                     <div class="meta"><span class="chip blue">XP 80</span><span class="chip orange">Coins 120</span></div>
@@ -166,6 +181,7 @@
 
                 <!-- Algorithms -->
                 <article class="learn-item" data-course-id="algorithms">
+                    <img class="learn-thumb" src="images/topics/algorithms.svg" alt="Algorithms & Data Structures thumbnail">
                     <h4>Algorithms & Data Structures</h4>
                     <p>Arrays, linked lists, trees, graphs, and common algorithms.</p>
                     <div class="meta"><span class="chip blue">XP 100</span><span class="chip orange">Coins 160</span></div>
@@ -184,6 +200,7 @@
 
                 <!-- Security -->
                 <article class="learn-item" data-course-id="security">
+                    <img class="learn-thumb" src="images/topics/security.svg" alt="Cybersecurity Essentials thumbnail">
                     <h4>Cybersecurity Essentials</h4>
                     <p>Threats, secure coding, encryption basics, and best practices.</p>
                     <div class="meta"><span class="chip blue">XP 90</span><span class="chip orange">Coins 140</span></div>
@@ -202,6 +219,7 @@
 
                 <!-- Cloud -->
                 <article class="learn-item" data-course-id="cloud">
+                    <img class="learn-thumb" src="images/topics/cloud.svg" alt="Cloud Computing Basics thumbnail">
                     <h4>Cloud Computing Basics</h4>
                     <p>Compute, storage, databases, and cost awareness in the cloud.</p>
                     <div class="meta"><span class="chip blue">XP 70</span><span class="chip orange">Coins 110</span></div>
@@ -220,6 +238,7 @@
 
                 <!-- Web Security CTF -->
                 <article class="learn-item" data-course-id="ctf">
+                    <img class="learn-thumb" src="images/topics/ctf.svg" alt="Web Security CTF thumbnail">
                     <h4>Web Security CTF</h4>
                     <p>Hands-on mini challenge: capture the flag string.</p>
                     <div class="meta"><span class="chip blue">XP 120</span><span class="chip orange">Coins 35</span></div>
@@ -238,6 +257,7 @@
 
                 <!-- Code Completion Challenge -->
                 <article class="learn-item" data-course-id="codefill">
+                    <img class="learn-thumb" src="images/topics/codefill.svg" alt="Code Completion Challenge thumbnail">
                     <h4>Code Completion Challenge</h4>
                     <p>Fill in the missing code to pass the automated check.</p>
                     <div class="meta"><span class="chip blue">XP 100</span><span class="chip orange">Coins 30</span></div>

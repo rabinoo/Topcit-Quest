@@ -129,7 +129,7 @@
   .reward-item{background:var(--card); border:1px solid rgba(148,163,184,.18); box-shadow:0 2px 8px rgba(0,0,0,.45)}
   .reward-details h4{color:var(--text)}
   .reward-details p{color:var(--muted)}
-  .reward-cost{color:#60a5fa}
+  .reward-cost{color:var(--gold)}
   .redeem-btn{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
   .redeem-btn:hover{background:linear-gradient(135deg,#1e40af,#1d4ed8)}
   
@@ -139,6 +139,23 @@
      opacity: 0.9;
    }
 }
+
+/* Manual theme overrides */
+[data-theme="dark"] .reward-item{background:var(--card); border:1px solid rgba(148,163,184,.18); box-shadow:0 2px 8px rgba(0,0,0,.45)}
+[data-theme="dark"] .reward-details h4{color:var(--text)}
+[data-theme="dark"] .reward-details p{color:var(--muted)}
+[data-theme="dark"] .reward-cost{color:var(--gold)}
+[data-theme="dark"] .redeem-btn{background:linear-gradient(135deg,#1d4ed8,#1e40af)}
+[data-theme="dark"] .redeem-btn:hover{background:linear-gradient(135deg,#1e40af,#1d4ed8)}
+[data-theme="dark"] .store-item .meta .description{color:#b0b0b0; opacity:.9}
+
+[data-theme="light"] .reward-item{background:#fff; border:1px solid #e0e0e0; box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+[data-theme="light"] .reward-details h4{color:#333}
+[data-theme="light"] .reward-details p{color:#666}
+[data-theme="light"] .reward-cost{color:var(--gold)}
+[data-theme="light"] .redeem-btn{background:linear-gradient(135deg, #007bff, #0056b3)}
+[data-theme="light"] .redeem-btn:hover{background:linear-gradient(135deg, #0056b3, #004085)}
+[data-theme="light"] .store-item .meta .description{color:#555; opacity:.95}
 
 /* Store item layout overrides for rewards page */
 .store-item {
@@ -169,7 +186,7 @@
   gap: 10px;
   margin: 0;
 }
-.store-item .cost{font-weight:700;color:var(--muted)}
+.store-item .cost{font-weight:700;color:var(--gold)}
 .store-item .btn.small.primary{align-self:center;min-width:120px;margin-top:auto}
 
 /* Store item description styling */
