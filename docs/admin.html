@@ -120,7 +120,7 @@
             <div class="topic-title">Upload Image</div>
             <input type="file" id="mod-image-file" class="text-input" accept="image/*" required />
           </label>
-          <div class="muted-note">Uploaded images are stored in <code>uploads/</code>.</div>
+          <div class="muted-note">On local server, images save to <code>uploads/</code>. On static hosts (e.g., GitHub Pages), images are embedded inline.</div>
           <div class="auth-actions" style="margin-top:8px; gap:8px; display:flex; flex-wrap:wrap">
             <button class="btn primary" type="submit">Add Module</button>
           </div>
@@ -302,10 +302,24 @@
         const base = (suggestedName||'image').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
         const now = Date.now();
         fd.append('file', resized, `${base}-${now}.webp`);
-        const res = await fetch('/upload', { method: 'POST', body: fd });
-        if(!res.ok){ throw new Error('Upload failed'); }
-        const data = await res.json();
-        return data.path || data.url || '';
+        // Detect static hosting (GitHub Pages) and gracefully fallback to Data URL
+        const isStaticHost = /github\.io$/i.test(location.hostname) || /githubpages/i.test(location.hostname);
+        if(!isStaticHost){
+          try{
+            const res = await fetch('/upload', { method: 'POST', body: fd });
+            if(res.ok){ const data = await res.json(); return data.path || data.url || ''; }
+          }catch(_){ /* ignore and fallback */ }
+        }
+        // Fallback: embed image as Data URL (works on static hosts)
+        const dataUrl = await new Promise((resolve, reject)=>{
+          try{
+            const fr = new FileReader();
+            fr.onload = ()=> resolve(String(fr.result||''));
+            fr.onerror = ()=> reject(new Error('DataURL failed'));
+            fr.readAsDataURL(resized);
+          }catch(err){ reject(err); }
+        });
+        return dataUrl;
       }
 
       // Auto-slug from title
