@@ -206,7 +206,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .dashboard-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:stretch}
 .dashboard-grid .card{display:flex;flex-direction:column;height:100%}
-.store-card{min-height:500px}
+.store-card{min-height:500px; position:relative}
 .leaderboard-card{min-height:500px}
 .store-card .store-items{max-height:none;overflow:visible;flex:1;display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;align-items:stretch;padding:8px 4px}
 @media (max-width: 1024px){
@@ -254,7 +254,7 @@ body::after{ background:radial-gradient(closest-side, rgba(244,162,97,.28), tran
 }
 
 /* Empty store message */
-.empty-store-message{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;flex:1}
+.empty-store-message{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0;margin:0}
 .empty-icon{font-size:48px;margin-bottom:16px;opacity:0.6}
 .empty-text{font-weight:700;font-size:18px;color:var(--text);margin-bottom:8px}
 .empty-subtext{color:var(--muted);font-size:14px}

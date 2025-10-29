@@ -682,7 +682,16 @@
     el.addEventListener('click', (e)=>{
       // only act on button or container click
       if(e.target instanceof HTMLElement && (e.target.tagName === 'BUTTON' || e.currentTarget === e.target.closest('[data-redeem]'))){
-        handleRedeem(el);
+        const name = el.querySelector('.name')?.textContent?.trim() || 'this reward';
+        const cost = parseInt(el.getAttribute('data-cost') || '0', 10);
+        showConfirmModal({
+          title: 'Confirm Redemption',
+          message: `Redeem "${name}" for ${cost} coins? This will deduct coins from your wallet.`,
+          confirmText: 'Redeem',
+          cancelText: 'Cancel',
+          onConfirm(){ handleRedeem(el); },
+          onCancel(){ /* no-op */ }
+        });
       }
     });
   });
@@ -1783,17 +1792,7 @@ function setupSettingsModal(){
 
 function showConfirmModal(opts){
   const { title = 'Confirm', message = '', confirmText = 'OK', cancelText = 'Cancel', onConfirm = ()=>{}, onCancel = ()=>{} } = opts || {};
-  // Inject styles if not present (ensures modal works on all pages)
-  if(!document.getElementById('topcit-modal-style')){
-    const s = document.createElement('style');
-    s.id = 'topcit-modal-style';
-    s.textContent = `.modal-backdrop{position:fixed;inset:0;display:grid;place-items:center;background:rgba(2,8,23,.55);backdrop-filter:blur(2px);z-index:1000}`+
-                    `.modal{background:var(--card);color:var(--text);border-radius:16px;box-shadow:0 22px 50px rgba(2,8,23,.25);border:1px solid rgba(148,163,184,.28);padding:20px;width:min(480px,calc(100% - 32px))}`+
-                    `.modal-head h3{margin:0;font-weight:800}`+
-                    `.modal-body p{margin:10px 0 0;color:var(--muted)}`+
-                    `.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}`;
-    document.head.appendChild(s);
-  }
+  // Use existing modal styles without overriding global classes
   const backdrop = document.createElement('div');
   backdrop.className = 'modal-backdrop';
   backdrop.setAttribute('role','dialog');
@@ -1808,9 +1807,11 @@ function showConfirmModal(opts){
       </div>
     </div>`;
   document.body.appendChild(backdrop);
+  // Show modal
+  setTimeout(()=> backdrop.classList.add('open'), 10);
   const cancelBtn = backdrop.querySelector('[data-cancel]');
   const confirmBtn = backdrop.querySelector('[data-confirm]');
-  const cleanup = ()=>{ try{ document.body.removeChild(backdrop); }catch(_){} };
+  const cleanup = ()=>{ backdrop.classList.remove('open'); setTimeout(()=>{ try{ document.body.removeChild(backdrop); }catch(_){} }, 150); };
   cancelBtn?.addEventListener('click', ()=>{ cleanup(); onCancel(); });
   confirmBtn?.addEventListener('click', ()=>{ cleanup(); onConfirm(); });
   backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop){ cleanup(); onCancel(); } });

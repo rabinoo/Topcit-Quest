@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <link rel="icon" type="image/png" href="images/coin.png">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
   <script defer src="script.js"></script>
 </head>
 <body class="auth-bg">
@@ -64,12 +64,7 @@
           </div>
           <div class="auth-actions">
             <button class="btn primary" type="submit">Create account</button>
-            <button class="btn google-btn" type="button" id="google-register">
-              <span class="google-icon-badge">
-                <img src="images/google.webp" alt="Google" class="google-icon">
-              </span>
-              <span class="google-text">Sign up with Google</span>
-            </button>
+            <div id="google-render-target"></div>
           </div>
           <div style="margin-top:12px;color:var(--muted);font-weight:700">
             Already have an account? <a href="login.html" class="link-text">Login</a>
@@ -102,9 +97,9 @@
       try{
         if(window.google && google.accounts && google.accounts.id){ cb(); return; }
       }catch(_){ }
-      const tag = document.getElementById('google-gsi-client');
+      const tag = document.querySelector('script[src*="accounts.google.com/gsi/client"]') || document.getElementById('google-gsi-client');
       if(typeof ensureGoogleClientLoaded === 'function'){ ensureGoogleClientLoaded(cb); return; }
-      if(tag){ tag.addEventListener('load', ()=> cb()); }
+      if(tag){ tag.addEventListener('load', ()=> cb()); } else { window.addEventListener('load', ()=> cb()); }
     }
 
     // Initialize Google OAuth when the page loads (after GIS is ready)
@@ -115,6 +110,14 @@
             client_id: GOOGLE_CLIENT_ID,
             callback: handleGoogleResponse
           });
+          const tgt = document.getElementById('google-render-target');
+          if(tgt){
+            const regBtn = document.querySelector('.auth-actions .btn.primary');
+            const w = regBtn ? Math.round(regBtn.getBoundingClientRect().width) : 0;
+            const opts = { theme: 'filled_blue', size: 'large', text: 'continue_with', shape: 'pill', logo_alignment: 'left', locale: 'en' };
+            if(w > 0){ opts.width = w; }
+            google.accounts.id.renderButton(tgt, opts);
+          }
         }catch(_){ }
       });
     };
@@ -129,6 +132,16 @@
           picture: payload.picture,
           provider: 'google'
         };
+        // Restrict to SLU domain
+        const hd = payload.hd || '';
+        const email = String(payload.email||'');
+        const isSLU = hd === 'slu.edu.ph' || email.endsWith('@slu.edu.ph');
+        if(!isSLU){
+          const err = document.getElementById('register-error');
+          err.textContent = 'Only SLU (@slu.edu.ph) Google accounts are allowed.';
+          err.style.display = 'block';
+          return;
+        }
         saveUser(user);
         localStorage.setItem('topcit_notice', 'logged_in');
         showGoogleLoginSuccessModal(user.name);
@@ -142,18 +155,7 @@
       }
     }
     
-    // Trigger Google OAuth when button is clicked (guarded and initializes client_id if needed)
-    function initiateGoogleLogin() {
-      ensureGsi(()=>{
-        try{
-          google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleResponse
-          });
-          google.accounts.id.prompt();
-        }catch(_){ console.warn('Google not ready yet, please try again.'); }
-      });
-    }
+    // Old custom prompt-based Google flow removed; official button is rendered above.
     
     document.getElementById('register-form').addEventListener('submit', function(e){
       e.preventDefault();
@@ -195,7 +197,7 @@
       window.location.href = 'index.html';
     });
     
-    document.getElementById('google-register').addEventListener('click', initiateGoogleLogin);
+    // No click handler needed for Google; the rendered button manages the flow.
     
     // Password toggle functionality
     function togglePassword(inputId, button) {
