@@ -231,8 +231,8 @@
       const newCourses = availableCourses - lastCourseCount;
       addNotification(
         'new_course',
-        '📚 New Course Available!',
-        `${newCourses} new course${newCourses > 1 ? 's' : ''} ${newCourses > 1 ? 'are' : 'is'} now available!`
+        '🧭 New Quest Available!',
+        `${newCourses} new quest${newCourses > 1 ? 's' : ''} ${newCourses > 1 ? 'are' : 'is'} now available!`
       );
     }
     localStorage.setItem(COURSE_COUNT_KEY, String(availableCourses));
@@ -389,6 +389,65 @@
     });
   }
 
+  // ===== Streak Feature =====
+  const STREAK_COUNT_KEY = 'topcit_streak_count';
+  const LAST_LOGIN_KEY = 'topcit_last_login_at';
+
+  function getNum(key, def){
+    try{ const v = parseInt(localStorage.getItem(key)||String(def),10); return isNaN(v) ? def : v; }catch(_){ return def; }
+  }
+  function setNum(key, val){
+    try{ localStorage.setItem(key, String(val)); }catch(_){}
+  }
+
+  function daysBetween(d1, d2){
+    const a = new Date(d1); const b = new Date(d2);
+    const ms = b.setHours(0,0,0,0) - a.setHours(0,0,0,0);
+    return Math.floor(ms / (24*60*60*1000));
+  }
+
+  function updateStreakOnVisit(){
+    const now = Date.now();
+    const last = parseInt(localStorage.getItem(LAST_LOGIN_KEY)||'0',10) || 0;
+    let streak = getNum(STREAK_COUNT_KEY, 0);
+
+    if(!last){
+      // First ever visit -> start streak at 1
+      streak = 1;
+    } else {
+      const diffDays = daysBetween(last, now);
+      if(diffDays === 0){
+        // Already counted today; no change
+      } else if(diffDays === 1){
+        // First login of the new day
+        streak = streak + 1;
+      } else if(diffDays >= 2){
+        // Missed at least one full day -> reset to zero
+        streak = 0;
+      }
+    }
+
+    setNum(STREAK_COUNT_KEY, streak);
+    setNum(LAST_LOGIN_KEY, now);
+    renderStreakChip(streak);
+  }
+
+  function renderStreakChip(streak){
+    const chipEls = Array.from(document.querySelectorAll('.streak-mini'));
+    chipEls.forEach(chip=>{
+      const numEl = chip.querySelector('.streak-num');
+      if(numEl){ numEl.textContent = String(streak); }
+      // Apply milestone color classes
+      chip.classList.remove('streak-1','streak-3','streak-5','streak-7');
+      let cls = 'streak-1';
+      if(streak >= 7) cls = 'streak-7';
+      else if(streak >= 5) cls = 'streak-5';
+      else if(streak >= 3) cls = 'streak-3';
+      chip.classList.add(cls);
+    });
+  }
+  // ===== End Streak Feature =====
+
   // Animate topic rings
   function animateRings(){
     rings.forEach((c, i)=>{
@@ -436,9 +495,13 @@
     xpTotal += inc;
     xpInLevel += inc;
     let didLevel = false;
+    let coinsGained = 0; // total coins awarded for this XP addition due to rank-ups
     let rank = levelIdx + 1;
     let threshold = requiredXpForRank(rank);
     while(xpInLevel >= threshold && levelIdx < MAX_RANK - 1){
+      // Award coins for leveling from current rank to next: 200 base + 10 per prior rank
+      const currentRankBefore = levelIdx + 1; // 1-based
+      coinsGained += 200 + (currentRankBefore - 1) * 10;
       xpInLevel -= threshold;
       levelIdx += 1;
       rank = levelIdx + 1;
@@ -451,8 +514,14 @@
     if(xpTotalEl){ animateNumber(xpTotalEl, currentDisplay, xpTotal, 600); }
     saveProgress();
     if(didLevel){
+      // Credit awarded coins to wallet and refresh store filters
+      if(coinsGained > 0){
+        setWallet(getWallet() + coinsGained);
+        filterAffordableStoreItems();
+        limitDashboardStoreItems();
+      }
       showToast(`Rank up! You are now Rank ${rank}.`, 'success');
-      showRankUp(`Rank ${rank}`);
+      showRankUp(`Rank ${rank}`, coinsGained);
     }
   }
 
@@ -717,15 +786,21 @@
         const existingProgress = item.querySelector('.progress');
         if(existingProgress) existingProgress.remove();
         // Mark completed visually and add a chip
-        if(isCourseCompleted(id)){
-          item.classList.add('completed');
-          if(meta && !meta.querySelector('.chip.green')){
-            const doneChip = document.createElement('span');
-            doneChip.className = 'chip green';
-            doneChip.textContent = 'Completed';
-            meta.appendChild(doneChip);
+          if(isCourseCompleted(id)){
+            item.classList.add('completed');
+            if(meta && !meta.querySelector('.chip.green')){
+              const doneChip = document.createElement('span');
+              doneChip.className = 'chip green';
+              doneChip.innerHTML = '<img class="chip-icon" src="images/complete.png" alt="Completed"> Completed';
+              meta.appendChild(doneChip);
+            }
+            // Hide the Start button for completed quests
+            const actions = item.querySelector('.course-actions');
+            if(actions){
+              const startBtnCompleted = actions.querySelector('[data-course-start]');
+              if(startBtnCompleted) startBtnCompleted.remove();
+            }
           }
-        }
         // Ongoing chip
         const ongoing = getOngoingCourses();
         if(ongoing.includes(id)){
@@ -961,7 +1036,7 @@
     if(ids.length === 0){
       const p = document.createElement('p');
       p.className = 'muted';
-      p.textContent = 'No completed courses yet.';
+      p.textContent = 'No completed quests yet.';
       container.appendChild(p);
       return;
     }
@@ -975,28 +1050,14 @@
       if(meta && !meta.querySelector('.chip.green')){
         const doneChip = document.createElement('span');
         doneChip.className = 'chip green';
-        doneChip.textContent = 'Completed';
+        doneChip.innerHTML = '<img class="chip-icon" src="images/complete.png" alt="Completed"> Completed';
         meta.appendChild(doneChip);
       }
-      // Adjust actions: Start -> Review and remove Finish
+      // Adjust actions: remove Start and Finish for completed
       const actions = clone.querySelector('.course-actions');
       if(actions){
         const startBtn = actions.querySelector('[data-course-start]');
-        if(startBtn){
-          startBtn.textContent = 'Review';
-          startBtn.classList.remove('primary');
-          startBtn.classList.add('ghost');
-          startBtn.removeAttribute('data-xp');
-          startBtn.removeAttribute('data-coins');
-          startBtn.dataset.bound = '1';
-          startBtn.addEventListener('click', ()=>{
-            const url = new URL('course.html', location.href);
-            url.searchParams.set('course', id);
-            url.searchParams.set('xp', '0');
-            url.searchParams.set('coins', '0');
-            location.assign(url.toString());
-          });
-        }
+        if(startBtn) startBtn.remove();
         const finishBtn = actions.querySelector('[data-course-finish]');
         if(finishBtn) finishBtn.remove();
       }
@@ -1106,21 +1167,30 @@
       }else{
         ids.forEach(id => {
           const li = document.createElement('li');
-          const icon = document.createElement('span');
-          icon.className = 'icon ms';
-          icon.textContent = status === 'completed' ? 'check_circle' : status === 'ongoing' ? 'schedule' : 'menu_book';
+          // Use image-based icons for dashboard materials
+          const icon = document.createElement('img');
+          icon.className = 'icon-img';
+          if(status === 'completed'){
+            icon.src = 'images/complete.png';
+            icon.alt = 'Completed';
+          }else{
+            icon.src = 'images/quest.png';
+            icon.alt = 'Quest';
+          }
           const a = document.createElement('a');
           a.href = getCourseUrl(id, status);
           a.textContent = getCourseTitle(id);
           const meta = document.createElement('span');
           meta.className = 'meta';
           if(status === 'completed'){
+            meta.classList.add('status-completed');
             meta.textContent = 'Completed';
           }else if(status === 'ongoing'){
+            meta.classList.add('status-ongoing');
             meta.textContent = 'In progress';
           }else{
             const r = getCourseRewards(id);
-            meta.textContent = `XP ${r.xp} • Coins ${r.coins}`;
+            meta.innerHTML = `<span class="xp"><img class="xp-icon" src="images/exp.png" alt="XP"> XP ${r.xp}</span> <span class="dot">•</span> <span class="coins"><img class="coin-icon" src="images/coin.png" alt="Coins"> Coins ${r.coins}</span>`;
           }
           li.appendChild(icon);
           li.appendChild(a);
@@ -1270,6 +1340,7 @@
     };
     // Prefer admin-published custom module content if available
     let customMeta = null;
+    let difficultyOverride = null;
     try{
       const mods = JSON.parse(localStorage.getItem('topcit_custom_modules') || '[]');
       if(Array.isArray(mods)){
@@ -1282,8 +1353,10 @@
             bullets: c.bullets || null,
             reflection: c.reflection || null,
             ctf: c.ctf || null,
-            codeFill: c.codeFill || null
+            codeFill: c.codeFill || null,
+            phased: c.phased || null
           };
+          difficultyOverride = cm.difficulty || null;
         }
       }
     }catch(_){ customMeta = null; }
@@ -1293,9 +1366,32 @@
     const titleEl = container.querySelector('[data-course-title]');
     const xpEl = container.querySelector('[data-course-xp]');
     const coinsEl = container.querySelector('[data-course-coins]');
+    const diffEl = container.querySelector('[data-difficulty-chip]');
     if(titleEl) titleEl.textContent = meta.title;
     if(xpEl) xpEl.textContent = `XP ${xp}`;
     if(coinsEl) coinsEl.textContent = `Coins ${coins}`;
+    // Compute and render difficulty
+    const mapDifficultyFromXp = (x)=>{
+      if(x >= 120) return 'Impossible';
+      if(x >= 100) return 'Expert';
+      if(x >= 90) return 'Advanced';
+      if(x >= 80) return 'Intermediate';
+      return 'Beginner';
+    };
+    const diffClassFor = (label)=>{
+      const k = String(label||'').toLowerCase();
+      if(k.includes('impossible')) return 'diff-impossible';
+      if(k.includes('expert')) return 'diff-expert';
+      if(k.includes('advanced')) return 'diff-advanced';
+      if(k.includes('intermediate')) return 'diff-intermediate';
+      return 'diff-beginner';
+    };
+    const diffLabel = difficultyOverride || mapDifficultyFromXp(xp);
+    if(diffEl){
+      diffEl.textContent = `Game Difficulty: ${diffLabel}`;
+      diffEl.classList.remove('diff-beginner','diff-intermediate','diff-advanced','diff-expert','diff-impossible');
+      diffEl.classList.add(diffClassFor(diffLabel));
+    }
   
     // Build tasks content (optional tasks supported)
     const bulletsEl = container.querySelector('[data-task-read-list]');
@@ -1351,6 +1447,87 @@
   if(readBtn && needRead){ readBtn.addEventListener('click', ()=>{ readDone = true; container.querySelector('[data-read-status]').textContent = 'Marked as read ✓'; readBtn.disabled = true; updateFinish(); }); }
   if(quizOptsEl && needQuiz){ quizOptsEl.addEventListener('change', ()=>{ const sel = container.querySelector('input[name="quiz"]:checked'); quizDone = !!sel && parseInt(sel.value,10) === meta.quiz.correctIndex; updateFinish(); }); }
   if(reflectInput && needRefl){ reflectInput.addEventListener('input', ()=>{ reflectDone = (reflectInput.value.trim().length >= 20); updateFinish(); }); }
+  
+  // Phased flow: Review -> Quiz -> Answers
+  if(meta.phased){
+    // Hide default tasks
+    if(readTask) readTask.style.display = 'none';
+    if(quizTask) quizTask.style.display = 'none';
+    if(reflectTask) reflectTask.style.display = 'none';
+    if(ctfBlock) ctfBlock.style.display = 'none';
+    if(codeBlock) codeBlock.style.display = 'none';
+    // Build phased container
+    const body = container.querySelector('[data-course-body]');
+    const flow = document.createElement('div');
+    flow.className = 'task';
+    flow.setAttribute('data-phased-flow','');
+    const reviewItems = Array.isArray(meta.phased.review) ? meta.phased.review : [];
+    const questions = (meta.phased.quiz && Array.isArray(meta.phased.quiz.questions)) ? meta.phased.quiz.questions : [];
+    function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]||c)); }
+    flow.innerHTML = `
+      <div data-phase-1>
+        <h4>Phase 1: Review</h4>
+        <p>Review the following material:</p>
+        <ul>${reviewItems.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+        <div class="actions"><button class="btn small" data-next>Next</button></div>
+      </div>
+      <div data-phase-2 style="display:none">
+        <h4>Phase 2: Quiz</h4>
+        <p>Answer the questions below. You can proceed even if some are wrong.</p>
+        <div data-quiz-multi>
+          ${questions.map((q,qi)=>{
+            const opts = Array.isArray(q.options)?q.options:[];
+            return `<div class="task">
+              <div class="topic-title">Q${qi+1}: ${esc(q.question||'')}</div>
+              <div class="quiz-options">${opts.map((opt,oi)=>`<label><input type=\"radio\" name=\"pq-${qi}\" value=\"${oi}\"> ${esc(opt||'')}</label>`).join('')}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="actions"><button class="btn small" data-next>Next</button></div>
+      </div>
+      <div data-phase-3 style="display:none">
+        <h4>Phase 3: Review Answers</h4>
+        <div data-review-answers></div>
+        <div class="meta">After reviewing, click Finish to claim rewards.</div>
+      </div>
+    `;
+    const actionsEl = body.querySelector('.actions');
+    body.insertBefore(flow, actionsEl || null);
+    let phase = 1;
+    const phase1 = flow.querySelector('[data-phase-1]');
+    const phase2 = flow.querySelector('[data-phase-2]');
+    const phase3 = flow.querySelector('[data-phase-3]');
+    const reviewEl = flow.querySelector('[data-review-answers]');
+    const nextBtns = Array.from(flow.querySelectorAll('[data-next]'));
+    nextBtns.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(phase === 1){ phase1.style.display = 'none'; phase2.style.display = ''; phase = 2; flow.scrollIntoView({behavior:'smooth', block:'start'}); }
+        else if(phase === 2){
+          // Compute results
+          const blocks = [];
+          questions.forEach((q,qi)=>{
+            const opts = Array.isArray(q.options)?q.options:[];
+            const sel = flow.querySelector(`input[name=\"pq-${qi}\"]:checked`);
+            const chosenIdx = sel ? parseInt(sel.value,10) : null;
+            const correctIdx = Number.isFinite(q.correctIndex) ? q.correctIndex : 0;
+            const correctLabel = opts[correctIdx] || '';
+            const chosenLabel = (chosenIdx!=null && opts[chosenIdx]!=null) ? opts[chosenIdx] : '(no answer)';
+            const ok = (chosenIdx === correctIdx);
+            blocks.push(`<div class=\"task\">
+              <div><strong>Q${qi+1}:</strong> ${esc(q.question||'')}</div>
+              <div>Your answer: ${esc(chosenLabel)} ${ok?'✓':'✗'}</div>
+              <div>Correct answer: ${esc(correctLabel)}</div>
+              ${q.explanation?`<div class=\"muted\">Explanation: ${esc(q.explanation)}</div>`:''}
+            </div>`);
+          });
+          if(reviewEl){ reviewEl.innerHTML = blocks.join(''); }
+          phase2.style.display = 'none'; phase3.style.display = ''; phase = 3; flow.scrollIntoView({behavior:'smooth', block:'start'});
+          // Enable finishing after phase 3
+          readDone = true; quizDone = true; reflectDone = true; ctfDone = true; codeDone = true; updateFinish();
+        }
+      });
+    });
+  }
   
   // CTF task wiring
   if(meta.ctf && ctfBlock){
@@ -1414,7 +1591,50 @@
         completionView.style.display = '';
         container.querySelector('[data-course-body]').style.display = 'none';
         const sumEl = container.querySelector('[data-completion-summary]');
-        if(sumEl) sumEl.textContent = `+${xp} XP • +${coins} coins`;
+        if(sumEl){
+          sumEl.innerHTML = `
+            <span class="summary-item xp"><img class="xp-icon" src="images/exp.png" alt="XP"> +${xp} XP</span>
+            <span class="dot">•</span>
+            <span class="summary-item coins"><img class="coin-icon" src="images/coin.png" alt="Coins"> +${coins} coins</span>
+          `;
+        }
+        const loot = container.querySelector('[data-loot-chips]');
+        if(loot){
+          loot.innerHTML = `
+            <span class="loot-chip xp"><img class="xp-icon" src="images/exp.png" alt="XP"> XP +${xp}</span>
+            <span class="loot-chip coins"><img class="coin-icon" src="images/coin.png" alt="Coins"> Coins +${coins}</span>
+          `;
+        }
+        const rarity = xp >= 90 ? 'epic' : (xp >= 70 ? 'rare' : 'common');
+        const banner = container.querySelector('.quest-banner');
+        const badge = container.querySelector('[data-rarity]');
+        if(banner){ banner.classList.remove('rare','epic','common'); banner.classList.add(rarity); }
+        if(badge){ badge.textContent = rarity.toUpperCase(); badge.classList.remove('rare','epic','common'); badge.classList.add(rarity); }
+        // Trigger celebratory entry animation
+        completionView.classList.add('show');
+        // Lightweight confetti burst (reuses global .confetti styles)
+        const PIECES = 60;
+        const confettiEls = [];
+        for(let i=0;i<PIECES;i++){
+          const c = document.createElement('span');
+          c.className = 'confetti';
+          const hue = Math.floor(20 + Math.random()*320);
+          const x = Math.floor(Math.random() * Math.max(window.innerWidth - 16, 320));
+          const drift = Math.floor(-160 + Math.random()*320);
+          const delay = (Math.random()*0.4).toFixed(2)+'s';
+          const dur = (1.6 + Math.random()*1.8).toFixed(2)+'s';
+          const rot = Math.floor(Math.random()*360)+'deg';
+          c.style.setProperty('--hue', hue);
+          c.style.setProperty('--x', x+'px');
+          c.style.setProperty('--drift', drift+'px');
+          c.style.setProperty('--delay', delay);
+          c.style.setProperty('--dur', dur);
+          c.style.setProperty('--rot', rot);
+          document.body.appendChild(c);
+          confettiEls.push(c);
+        }
+        // Clean up pieces after animation finishes
+        setTimeout(()=>{ confettiEls.forEach(el=>{ try{ el.remove(); }catch(_){} }); }, 3500);
       }
       showToast('Course completed!', 'success');
     });
@@ -1860,11 +2080,12 @@ function setupLogoHome(){
 }
 
 window.addEventListener('load', setupProfileModal);
-window.addEventListener('load', setupCoursePage);
-window.addEventListener('load', revealCharts);
-window.addEventListener('load', animateRings);
-window.addEventListener('load', filterAffordableStoreItems);
-window.addEventListener('load', () => limitDashboardStoreItems(8));
+  window.addEventListener('load', setupCoursePage);
+  window.addEventListener('load', revealCharts);
+  window.addEventListener('load', animateRings);
+  window.addEventListener('load', filterAffordableStoreItems);
+  window.addEventListener('load', () => limitDashboardStoreItems(8));
+  window.addEventListener('load', updateStreakOnVisit);
 // Seed default modules for Learn/Admin when none exist
 function seedDefaultModules(){
   let hasAny = false;
@@ -1901,7 +2122,7 @@ function renderCustomModulesIntoAllGrid(){
   if(!grid) return;
   // Always clear defaults
   if(!Array.isArray(mods) || mods.length === 0){
-    grid.innerHTML = '<p class="muted">No published courses yet.</p>';
+    grid.innerHTML = '<p class="muted">No published quests yet.</p>';
     return;
   }
   const toCard = (m)=>{
@@ -1911,14 +2132,16 @@ function renderCustomModulesIntoAllGrid(){
     const img = m.image || 'images/topics/programming.svg';
     const desc = m.description || '';
     const diff = m.difficulty || 'Beginner';
+    const dl = String(diff).toLowerCase();
+    const diffCls = dl.includes('impossible') ? 'diff-impossible' : (dl.includes('expert') ? 'diff-expert' : (dl.includes('advanced') ? 'diff-advanced' : (dl.includes('intermediate') ? 'diff-intermediate' : 'diff-beginner')));
     return `
       <article class="learn-item" data-course-id="${id}">
         <div class="thumb-wrap">
-          <img class="learn-thumb" src="${img}" alt="${(m.title||'Course')} thumbnail">
+          <img class="learn-thumb" src="${img}" alt="${(m.title||'Quest')} thumbnail">
         </div>
-        <h4>${m.title||'Course'}</h4>
+        <h4>${m.title||'Quest'}</h4>
         <p>${desc}</p>
-        <div class="meta"><span class="chip purple" data-difficulty>${diff}</span><span class="chip blue">XP ${xp}</span><span class="chip orange">Coins ${coins}</span></div>
+        <div class="meta"><span class="chip ${diffCls}" data-difficulty>Game Difficulty: ${diff}</span><span class="chip blue">XP ${xp}</span><span class="chip orange">Coins ${coins}</span></div>
         <div class="course-actions">
           <button class="btn primary" data-course-start data-xp="${xp}" data-coins="${coins}">Start</button>
           <button class="btn" data-course-finish data-xp="${xp}" data-coins="${coins}" style="display:none">Finish & claim</button>
@@ -1936,9 +2159,9 @@ window.addEventListener('load', setupLearnPreviews);
 window.addEventListener('load', setupDashboardMaterials);
 window.addEventListener('load', setupTopicsSection);
 window.addEventListener('load', initNotificationSystem);
-window.addEventListener('load', setupLogout);
-window.addEventListener('load', showLoginLogoutNotice);
-window.addEventListener('load', setupLogoHome);
+  window.addEventListener('load', setupLogout);
+  window.addEventListener('load', showLoginLogoutNotice);
+  window.addEventListener('load', setupLogoHome);
 // Apply theme immediately to minimize flash of incorrect theme
 applyInitialTheme();
 // Ensure Settings and Profile modals are bound on all pages
@@ -1955,42 +2178,60 @@ window.addEventListener('load', setupWalletTamperGuard);
 
 
 // Rank-up popup animation
-function showRankUp(newLevel){
+function showRankUp(newLevel, coinsAwarded){
   const backdrop = document.createElement('div');
   backdrop.className = 'rankup-backdrop';
   const pop = document.createElement('div');
   pop.className = 'rankup-pop';
+  const numMatch = String(newLevel||'').match(/\d+/);
+  const lvlNum = numMatch ? numMatch[0] : String(newLevel||'');
   pop.innerHTML = `
-    <div class="rankup-ring"></div>
-    <div class="rankup-title">Rank Up!</div>
-    <div class="rankup-level">${newLevel}</div>
-    <div class="shine"></div>
-    <button class="btn primary rankup-close">Continue</button>`;
+    <div class="levelup-wrap">
+      <div class="levelup-rays"></div>
+      <div class="levelup-badge">
+        <div class="wing left"></div>
+        <div class="wing right"></div>
+        <div class="badge-core">
+          <div class="badge-label">LEVEL</div>
+          <div class="badge-num">${lvlNum}</div>
+        </div>
+      </div>
+      <div class="levelup-text">LEVEL UP!</div>
+      ${coinsAwarded ? `<div class="levelup-reward"><img class="coin-icon" src="images/coin.png" alt="Coins"> +${Number(coinsAwarded).toLocaleString()} coins</div>` : ''}
+      <div class="levelup-cta">
+        <a class="btn gold rankup-rewards" href="rewards.html" title="View rewards">Rewards</a>
+        <button class="btn sapphire rankup-close" title="Continue">Continue</button>
+      </div>
+    </div>`;
   backdrop.appendChild(pop);
   document.body.appendChild(backdrop);
 
   // Confetti burst
-  const PIECES = 28;
+  const PIECES = 60;
   for(let i=0;i<PIECES;i++){
     const c = document.createElement('span');
     c.className = 'confetti';
     const hue = Math.floor(20 + Math.random()*320);
-    const x = Math.floor(-120 + Math.random()*480);
-    const drift = Math.floor(-40 + Math.random()*80);
-    const delay = (Math.random()*0.2).toFixed(2)+'s';
-    const dur = (1.6 + Math.random()*1.2).toFixed(2)+'s';
+    const x = Math.floor(Math.random() * Math.max(window.innerWidth - 16, 320));
+    const drift = Math.floor(-160 + Math.random()*320);
+    const delay = (Math.random()*0.4).toFixed(2)+'s';
+    const dur = (1.6 + Math.random()*1.8).toFixed(2)+'s';
+    const rot = Math.floor(Math.random()*360)+'deg';
     c.style.setProperty('--hue', hue);
     c.style.setProperty('--x', x+'px');
     c.style.setProperty('--drift', drift+'px');
     c.style.setProperty('--delay', delay);
     c.style.setProperty('--dur', dur);
+    c.style.setProperty('--rot', rot);
     backdrop.appendChild(c);
   }
 
   requestAnimationFrame(()=> backdrop.classList.add('open'));
   function close(){ backdrop.classList.remove('open'); setTimeout(()=>backdrop.remove(),250); }
-  backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop || e.target.classList.contains('rankup-close')) close(); });
-  setTimeout(close, 3500);
+  // Persist until explicit button click
+  backdrop.addEventListener('click', (e)=>{ if(e.target.classList.contains('rankup-close')) close(); });
+  const rewardsLink = pop.querySelector('.rankup-rewards');
+  if(rewardsLink){ rewardsLink.addEventListener('click', ()=> close()); }
 }
 
 

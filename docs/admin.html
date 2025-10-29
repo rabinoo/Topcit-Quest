@@ -38,14 +38,14 @@
         </div>
       </div>
       <nav class="main-nav" aria-label="Primary">
-        <a class="tab" href="index.html" title="Dashboard"><span class="ms icon-inline">dashboard</span> <span>Dashboard</span></a>
-        <a class="tab" href="learn.html" title="Learn"><span class="ms icon-inline">menu_book</span> <span>Learn</span></a>
-        <a class="tab" href="leaderboards.html" title="Leaderboards"><span class="ms icon-inline">leaderboard</span> <span>Leaderboards</span></a>
-        <a class="tab" href="rewards.html" title="Rewards"><span class="ms icon-inline">card_giftcard</span> <span>Rewards</span></a>
+        <a class="tab" href="index.html" title="Dashboard"><img class="tab-icon" src="images/dashboard.png" alt="Dashboard icon"> <span>Dashboard</span></a>
+        <a class="tab" href="learn.html" title="Learn"><img class="tab-icon" src="images/Learn.png" alt="Learn icon"> <span>Learn</span></a>
+        <a class="tab" href="leaderboards.html" title="Leaderboards"><img class="tab-icon" src="images/Leaderboard.png" alt="Leaderboards icon"> <span>Leaderboards</span></a>
+        <a class="tab" href="rewards.html" title="Rewards"><img class="tab-icon" src="images/Rewards.png" alt="Rewards icon"> <span>Rewards</span></a>
       </nav>
       <nav class="header-controls" aria-label="User controls">
-        <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim ms">local_fire_department</span><span class="streak-num">7</span><span>day streak</span></div>
-        <button class="icon-btn" id="notify-btn" aria-label="Notifications"><span class="ms">notifications</span><span class="dot-badge" aria-hidden="true"></span></button>
+        <div class="streak-mini chip" title="Your current streak"><img class="streak-icon" src="images/streak.png" alt="Streak"><span class="streak-num">7</span><span>day streak</span></div>
+        <button class="icon-btn" id="notify-btn" aria-label="Notifications"><img class="notify-icon" src="images/notification.png" alt="Notifications"><span class="dot-badge" aria-hidden="true"></span></button>
         <div class="wallet chip" title="Your coins"><img class="coin-icon" src="images/coin.png" alt="Coins"><span class="amount" data-wallet-amount>1,260</span></div>
         <div class="user-menu">
           <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false" title="Open profile & settings">
@@ -112,6 +112,8 @@
               <option value="Beginner">Beginner</option>
               <option value="Intermediate">Intermediate</option>
               <option value="Advanced">Advanced</option>
+              <option value="Expert">Expert</option>
+              <option value="Impossible">Impossible</option>
             </select>
           </label>
           <div class="row">
@@ -174,6 +176,15 @@
         list.appendChild(p);
         return;
       }
+      // Map difficulty label to CSS chip class used across the site
+      const diffClassFor = (label)=>{
+        const k = String(label||'').toLowerCase();
+        if(k.includes('impossible')) return 'diff-impossible';
+        if(k.includes('expert')) return 'diff-expert';
+        if(k.includes('advanced')) return 'diff-advanced';
+        if(k.includes('intermediate')) return 'diff-intermediate';
+        return 'diff-beginner';
+      };
       mods.forEach((m, idx)=>{
         const card = document.createElement('article');
         card.className = 'card module-card';
@@ -183,11 +194,12 @@
         const refl = c.reflection || '';
         const ctf = c.ctf || {};
         const code = c.codeFill || {};
+        const diffCls = diffClassFor(m.difficulty||'Beginner');
         card.innerHTML = `
           <div class="thumb-wrap"><img class="learn-thumb" src="${m.image||'images/topics/programming.svg'}" alt="${m.title} thumbnail"></div>
           <h4>${m.title}</h4>
           <p>${m.description||''}</p>
-          <div class="meta"><span class="chip purple" data-difficulty>${m.difficulty||'Beginner'}</span><span class="chip blue">XP ${m.xp||0}</span><span class="chip orange">Coins ${m.coins||0}</span></div>
+          <div class="meta"><span class="chip ${diffCls}" data-difficulty>${m.difficulty||'Beginner'}</span><span class="chip blue">XP ${m.xp||0}</span><span class="chip orange">Coins ${m.coins||0}</span></div>
           <div class="course-actions">
             <button class="btn" data-delete="${idx}">Delete</button>
             <button class="btn" data-publish="${idx}">Publish to Learn</button>
@@ -221,7 +233,7 @@
       list.querySelectorAll('[data-edit]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           const idx = parseInt(btn.getAttribute('data-edit'),10);
-          openContentModal(idx);
+          openContentEditor(idx);
         });
       });
     }
@@ -370,92 +382,183 @@
     });
   </script>
   <script>
-    // Modal editor for module content
-    function buildModalShell(){
-      const backdrop = document.createElement('div');
-      backdrop.className = 'modal-backdrop';
-      backdrop.setAttribute('role','dialog');
-      backdrop.setAttribute('aria-modal','true');
-      const modal = document.createElement('div');
-      modal.className = 'modal card';
-      backdrop.appendChild(modal);
-      document.body.appendChild(backdrop);
-      return { backdrop, modal };
-    }
-    function closeModal(backdrop){ backdrop.classList.remove('open'); setTimeout(()=> backdrop.remove(), 200); }
-    function openContentModal(idx){
+    // Full-page editor for module content (replaces modal)
+    function openContentEditor(idx){
       const mods = readModules();
       const m = mods[idx]; if(!m) return;
       const c = m.content || {};
       const quiz = c.quiz || {}; const options = quiz.options || [];
       const bullets = Array.isArray(c.bullets) ? c.bullets.join('\n') : '';
-      const { backdrop, modal } = buildModalShell();
-      modal.innerHTML = `
-        <div class="modal-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+      const phased = c.phased || null;
+      const orient = phased ? 'phased' : 'default';
+      const main = document.querySelector('main');
+      const builder = document.getElementById('admin-builder');
+      if(builder) builder.style.display = 'none';
+      const page = document.createElement('section');
+      page.id = 'content-editor';
+      page.className = 'card';
+      page.style.marginTop = '16px';
+      page.innerHTML = `
+        <div class="card-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
           <h3>Edit Content — ${m.title}</h3>
-          <button class="icon-btn" data-close aria-label="Close"><span class="ms">close</span></button>
+          <div style="display:flex;gap:8px">
+            <button class="btn" data-back>Back to Modules</button>
+          </div>
         </div>
-        <div class="modal-body" style="display:grid;gap:10px">
-          <label><div class="topic-title">Quiz question</div><input type="text" class="text-input" data-e-quiz-q value="${quiz.question||''}"></label>
-          <div class="row">
-            <label><div class="topic-title">Option 1</div><input type="text" class="text-input" data-e-quiz-o1 value="${options[0]||''}"></label>
-            <label><div class="topic-title">Option 2</div><input type="text" class="text-input" data-e-quiz-o2 value="${options[1]||''}"></label>
+        <div class="card-body" style="display:grid;gap:12px">
+          <label>
+            <div class="topic-title">Course Orientation</div>
+            <select class="text-input" data-e-orient>
+              <option value="default" ${orient==='default'?'selected':''}>Default tasks (Read, Quiz, Reflection, etc.)</option>
+              <option value="phased" ${orient==='phased'?'selected':''}>Phased: Review → Quiz → Answers</option>
+            </select>
+          </label>
+
+          <div data-default-editor style="display:${orient==='default'?'grid':'none'};gap:10px">
+            <label><div class="topic-title">Quiz question</div><input type="text" class="text-input" data-e-quiz-q value="${quiz.question||''}"></label>
+            <div class="row">
+              <label><div class="topic-title">Option 1</div><input type="text" class="text-input" data-e-quiz-o1 value="${options[0]||''}"></label>
+              <label><div class="topic-title">Option 2</div><input type="text" class="text-input" data-e-quiz-o2 value="${options[1]||''}"></label>
+            </div>
+            <div class="row">
+              <label><div class="topic-title">Option 3</div><input type="text" class="text-input" data-e-quiz-o3 value="${options[2]||''}"></label>
+              <label><div class="topic-title">Option 4</div><input type="text" class="text-input" data-e-quiz-o4 value="${options[3]||''}"></label>
+            </div>
+            <label><div class="topic-title">Correct option (1-4)</div><input type="number" min="1" max="4" class="text-input" data-e-quiz-c value="${Number.isFinite(quiz.correctIndex)?(quiz.correctIndex+1):''}"></label>
+            <label><div class="topic-title">Read bullets (one per line)</div><textarea class="text-input" rows="4" data-e-bullets>${bullets}</textarea></label>
+            <label><div class="topic-title">Reflection prompt</div><textarea class="text-input" rows="2" data-e-refl>${c.reflection||''}</textarea></label>
+            <div class="row">
+              <label><div class="topic-title">CTF prompt</div><input type="text" class="text-input" data-e-ctf-p value="${(c.ctf||{}).prompt||''}"></label>
+              <label><div class="topic-title">CTF flag</div><input type="text" class="text-input" data-e-ctf-f value="${(c.ctf||{}).flag||''}"></label>
+            </div>
+            <label><div class="topic-title">Code snippet</div><textarea class="text-input" rows="4" data-e-code-sn>${(c.codeFill||{}).snippet||''}</textarea></label>
+            <label><div class="topic-title">Code answer</div><input type="text" class="text-input" data-e-code-ans value="${(c.codeFill||{}).answer||''}"></label>
           </div>
-          <div class="row">
-            <label><div class="topic-title">Option 3</div><input type="text" class="text-input" data-e-quiz-o3 value="${options[2]||''}"></label>
-            <label><div class="topic-title">Option 4</div><input type="text" class="text-input" data-e-quiz-o4 value="${options[3]||''}"></label>
+
+          <div data-phased-editor style="display:${orient==='phased'?'grid':'none'};gap:10px">
+            <div class="muted">Phase 1: Review materials</div>
+            <label><div class="topic-title">Materials (one per line)</div><textarea class="text-input" rows="4" data-p-review>${Array.isArray(phased?.review)?phased.review.join('\n'):''}</textarea></label>
+            <div class="muted">Phase 2: Quiz / Exam maker</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <div class="topic-title">Questions</div>
+              <div style="display:flex;gap:8px">
+                <button class="btn small" data-add-q type="button">Add question</button>
+              </div>
+            </div>
+            <div data-p-quiz-list style="display:grid;gap:10px"></div>
+            <div class="muted">Phase 3: Review of answers is generated automatically from correct answers.</div>
           </div>
-          <label><div class="topic-title">Correct option (1-4)</div><input type="number" min="1" max="4" class="text-input" data-e-quiz-c value="${Number.isFinite(quiz.correctIndex)?(quiz.correctIndex+1):''}"></label>
-          <label><div class="topic-title">Read bullets (one per line)</div><textarea class="text-input" rows="4" data-e-bullets>${bullets}</textarea></label>
-          <label><div class="topic-title">Reflection prompt</div><textarea class="text-input" rows="2" data-e-refl>${c.reflection||''}</textarea></label>
-          <div class="row">
-            <label><div class="topic-title">CTF prompt</div><input type="text" class="text-input" data-e-ctf-p value="${(c.ctf||{}).prompt||''}"></label>
-            <label><div class="topic-title">CTF flag</div><input type="text" class="text-input" data-e-ctf-f value="${(c.ctf||{}).flag||''}"></label>
-          </div>
-          <label><div class="topic-title">Code snippet</div><textarea class="text-input" rows="4" data-e-code-sn>${(c.codeFill||{}).snippet||''}</textarea></label>
-          <label><div class="topic-title">Code answer</div><input type="text" class="text-input" data-e-code-ans value="${(c.codeFill||{}).answer||''}"></label>
         </div>
-        <div class="modal-actions">
+        <div class="card-actions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
           <button class="btn" data-cancel>Cancel</button>
           <button class="btn primary" data-save>Save</button>
         </div>`;
-      // Bind
-      const gv = (sel)=>{ const el = modal.querySelector(sel); return el ? (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.value : '') : ''; };
-      modal.querySelector('[data-close]')?.addEventListener('click', ()=> closeModal(backdrop));
-      modal.querySelector('[data-cancel]')?.addEventListener('click', (e)=>{ e.preventDefault(); closeModal(backdrop); });
-      modal.querySelector('[data-save]')?.addEventListener('click', ()=>{
-        const q = gv('[data-e-quiz-q]').trim();
-        const o1 = gv('[data-e-quiz-o1]').trim();
-        const o2 = gv('[data-e-quiz-o2]').trim();
-        const o3 = gv('[data-e-quiz-o3]').trim();
-        const o4 = gv('[data-e-quiz-o4]').trim();
-        const cidxRaw = gv('[data-e-quiz-c]').trim();
-        const opts = [o1,o2,o3,o4].filter(Boolean);
-        const hasQuiz = q && opts.length >= 2 && cidxRaw;
-        let correctIndex = null;
-        if(hasQuiz){ const n = parseInt(cidxRaw,10); correctIndex = (Number.isFinite(n) ? Math.min(Math.max(n,1),opts.length) : 1) - 1; }
-        const bulletsRaw = gv('[data-e-bullets]');
-        const bulletsArr = bulletsRaw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
-        const refl = gv('[data-e-refl]').trim();
-        const ctfP = gv('[data-e-ctf-p]').trim();
-        const ctfF = gv('[data-e-ctf-f]').trim();
-        const codeSn = gv('[data-e-code-sn]').trim();
-        const codeAns = gv('[data-e-code-ans]').trim();
-        const content = {};
-        if(hasQuiz){ content.quiz = { question: q, options: opts, correctIndex }; }
-        if(bulletsArr.length){ content.bullets = bulletsArr; }
-        if(refl){ content.reflection = refl; }
-        if(ctfP || ctfF){ content.ctf = { prompt: ctfP, flag: ctfF }; }
-        if(codeSn || codeAns){ content.codeFill = { snippet: codeSn, answer: codeAns }; }
-        m.content = content;
+      main.appendChild(page);
+      const gv = (sel)=>{ const el = page.querySelector(sel); return el ? (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.value : '') : ''; };
+      const goBack = ()=>{ page.remove(); if(builder) builder.style.display = ''; renderModules(); };
+      page.querySelector('[data-back]')?.addEventListener('click', goBack);
+      page.querySelector('[data-cancel]')?.addEventListener('click', (e)=>{ e.preventDefault(); goBack(); });
+      // Orientation toggle
+      const orientSel = page.querySelector('[data-e-orient]');
+      const defaultEditor = page.querySelector('[data-default-editor]');
+      const phasedEditor = page.querySelector('[data-phased-editor]');
+      orientSel?.addEventListener('change', ()=>{
+        const val = orientSel.value;
+        if(val === 'phased'){ defaultEditor.style.display = 'none'; phasedEditor.style.display = 'grid'; }
+        else { defaultEditor.style.display = 'grid'; phasedEditor.style.display = 'none'; }
+      });
+
+      // Phased quiz builder state and renderer
+      let pq = Array.isArray(phased?.quiz?.questions) && phased.quiz.questions.length
+        ? phased.quiz.questions.map(q=>({ question:q.question||'', options:Array.isArray(q.options)?q.options.slice(0):[], correctIndex:Number.isFinite(q.correctIndex)?q.correctIndex:0, explanation:q.explanation||'' }))
+        : [{ question:'', options:['',''], correctIndex:0, explanation:'' }];
+      const quizList = page.querySelector('[data-p-quiz-list]');
+      function renderPQ(){
+        if(!quizList) return;
+        quizList.innerHTML = pq.map((q,qi)=>{
+          const opts = (Array.isArray(q.options)?q.options:[]).map((opt,oi)=>{
+            return `<div class="row" data-pq-opt-row>
+              <label style="flex:1"><div class="topic-title">Option ${oi+1}</div><input type="text" class="text-input" data-pq-opt data-qi="${qi}" data-oi="${oi}" value="${opt||''}"></label>
+              <label style="width:160px"><div class="topic-title">Correct?</div><input type="radio" name="correct-${qi}" value="${oi}" ${q.correctIndex===oi?'checked':''}></label>
+            </div>`;
+          }).join('');
+          return `<div class="task" data-pq-item data-qi="${qi}">
+            <label><div class="topic-title">Question ${qi+1}</div><input type="text" class="text-input" data-pq-q data-qi="${qi}" value="${q.question||''}"></label>
+            ${opts}
+            <div class="row" style="justify-content:flex-end;gap:8px">
+              <button class="btn small" type="button" data-add-opt data-qi="${qi}">Add option</button>
+              <button class="btn small" type="button" data-remove-q data-qi="${qi}">Remove question</button>
+            </div>
+            <label><div class="topic-title">Explanation (optional)</div><input type="text" class="text-input" data-pq-expl data-qi="${qi}" value="${q.explanation||''}"></label>
+          </div>`;
+        }).join('');
+        // Bind dynamic inputs
+        Array.from(quizList.querySelectorAll('[data-pq-q]')).forEach(inp=>{
+          inp.addEventListener('input', ()=>{ const qi = parseInt(inp.getAttribute('data-qi'),10); pq[qi].question = inp.value; });
+        });
+        Array.from(quizList.querySelectorAll('[data-pq-expl]')).forEach(inp=>{
+          inp.addEventListener('input', ()=>{ const qi = parseInt(inp.getAttribute('data-qi'),10); pq[qi].explanation = inp.value; });
+        });
+        Array.from(quizList.querySelectorAll('[data-pq-opt]')).forEach(inp=>{
+          inp.addEventListener('input', ()=>{ const qi = parseInt(inp.getAttribute('data-qi'),10); const oi = parseInt(inp.getAttribute('data-oi'),10); if(!Array.isArray(pq[qi].options)) pq[qi].options=[]; pq[qi].options[oi] = inp.value; });
+        });
+        Array.from(quizList.querySelectorAll(`input[type="radio"]`)).forEach(r=>{
+          r.addEventListener('change', ()=>{ const qi = parseInt(r.name.replace('correct-',''),10); pq[qi].correctIndex = parseInt(r.value,10)||0; });
+        });
+        Array.from(quizList.querySelectorAll('[data-add-opt]')).forEach(btn=>{
+          btn.addEventListener('click', ()=>{ const qi = parseInt(btn.getAttribute('data-qi'),10); if(!Array.isArray(pq[qi].options)) pq[qi].options=[]; pq[qi].options.push(''); renderPQ(); });
+        });
+        Array.from(quizList.querySelectorAll('[data-remove-q]')).forEach(btn=>{
+          btn.addEventListener('click', ()=>{ const qi = parseInt(btn.getAttribute('data-qi'),10); pq.splice(qi,1); if(pq.length===0) pq.push({ question:'', options:['',''], correctIndex:0, explanation:'' }); renderPQ(); });
+        });
+      }
+      renderPQ();
+      page.querySelector('[data-add-q]')?.addEventListener('click', ()=>{ pq.push({ question:'', options:['',''], correctIndex:0, explanation:'' }); renderPQ(); });
+
+      page.querySelector('[data-save]')?.addEventListener('click', ()=>{
+        const currentOrient = (orientSel?.value||'default');
+        if(currentOrient === 'phased'){
+          const bulletsRaw = gv('[data-p-review]');
+          const bulletsArr = bulletsRaw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+          const qs = pq.map(q=>{
+            const opts = (Array.isArray(q.options)?q.options:[]).map(s=>String(s||'').trim()).filter(Boolean);
+            const has = String(q.question||'').trim() && opts.length >= 2;
+            return has ? { question:String(q.question).trim(), options:opts, correctIndex: Math.max(0, Math.min(q.correctIndex||0, opts.length-1)), explanation: String(q.explanation||'').trim() } : null;
+          }).filter(Boolean);
+          const content = { phased: { review: bulletsArr, quiz: { questions: qs } } };
+          m.content = content;
+        }else{
+          const q = gv('[data-e-quiz-q]').trim();
+          const o1 = gv('[data-e-quiz-o1]').trim();
+          const o2 = gv('[data-e-quiz-o2]').trim();
+          const o3 = gv('[data-e-quiz-o3]').trim();
+          const o4 = gv('[data-e-quiz-o4]').trim();
+          const cidxRaw = gv('[data-e-quiz-c]').trim();
+          const opts = [o1,o2,o3,o4].filter(Boolean);
+          const hasQuiz = q && opts.length >= 2 && cidxRaw;
+          let correctIndex = null;
+          if(hasQuiz){ const n = parseInt(cidxRaw,10); correctIndex = (Number.isFinite(n) ? Math.min(Math.max(n,1),opts.length) : 1) - 1; }
+          const bulletsRaw = gv('[data-e-bullets]');
+          const bulletsArr = bulletsRaw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+          const refl = gv('[data-e-refl]').trim();
+          const ctfP = gv('[data-e-ctf-p]').trim();
+          const ctfF = gv('[data-e-ctf-f]').trim();
+          const codeSn = gv('[data-e-code-sn]').trim();
+          const codeAns = gv('[data-e-code-ans]').trim();
+          const content = {};
+          if(hasQuiz){ content.quiz = { question: q, options: opts, correctIndex }; }
+          if(bulletsArr.length){ content.bullets = bulletsArr; }
+          if(refl){ content.reflection = refl; }
+          if(ctfP || ctfF){ content.ctf = { prompt: ctfP, flag: ctfF }; }
+          if(codeSn || codeAns){ content.codeFill = { snippet: codeSn, answer: codeAns }; }
+          m.content = content;
+        }
         saveModules(mods);
         // Auto-publish to Learn after save
         publishModules();
-        closeModal(backdrop);
-        // Re-render cards to reflect any UI hints
-        renderModules();
+        // Return to list
+        goBack();
       });
-      requestAnimationFrame(()=> backdrop.classList.add('open'));
     }
   </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Course | Topcit Quest</title>
+  <title>Quest | Topcit Quest</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
   <link rel="stylesheet" href="rewards.css" />
@@ -19,14 +19,14 @@
         </div>
       </div>
       <nav class="main-nav" aria-label="Primary">
-        <a class="tab" href="index.html" title="Dashboard"><span class="ms icon-inline">dashboard</span> <span>Dashboard</span></a>
-        <a class="tab active" href="learn.html" title="Learn"><span class="ms icon-inline">menu_book</span> <span>Learn</span></a>
-        <a class="tab" href="leaderboards.html" title="Leaderboards"><span class="ms icon-inline">leaderboard</span> <span>Leaderboards</span></a>
-        <a class="tab" href="rewards.html" title="Rewards"><span class="ms icon-inline">card_giftcard</span> <span>Rewards</span></a>
+        <a class="tab" href="index.html" title="Dashboard"><img class="tab-icon" src="images/dashboard.png" alt="Dashboard icon"> <span>Dashboard</span></a>
+        <a class="tab active" href="learn.html" title="Learn"><img class="tab-icon" src="images/Learn.png" alt="Learn icon"> <span>Learn</span></a>
+        <a class="tab" href="leaderboards.html" title="Leaderboards"><img class="tab-icon" src="images/Leaderboard.png" alt="Leaderboards icon"> <span>Leaderboards</span></a>
+        <a class="tab" href="rewards.html" title="Rewards"><img class="tab-icon" src="images/Rewards.png" alt="Rewards icon"> <span>Rewards</span></a>
       </nav>
       <nav class="header-controls" aria-label="User controls">
-        <div class="streak-mini chip" title="Your current streak"><span class="flame flame-anim ms">local_fire_department</span><span class="streak-num">7</span><span>day streak</span></div>
-        <button class="icon-btn" id="notify-btn" aria-label="Notifications"><span class="ms">notifications</span><span class="dot-badge" aria-hidden="true"></span></button>
+        <div class="streak-mini chip" title="Your current streak"><img class="streak-icon" src="images/streak.png" alt="Streak"><span class="streak-num">7</span><span>day streak</span></div>
+        <button class="icon-btn" id="notify-btn" aria-label="Notifications"><img class="notify-icon" src="images/notification.png" alt="Notifications"><span class="dot-badge" aria-hidden="true"></span></button>
   <div class="wallet chip" title="Your coins"><img class="coin-icon" src="images/coin.png" alt="Coins"><span class="amount" data-wallet-amount>0</span></div>
         <div class="user-menu">
           <button class="avatar-btn" id="user-menu-btn" aria-haspopup="true" aria-expanded="false" title="Open profile & settings">
@@ -47,6 +47,7 @@
       <div class="card-head">
         <h3 data-course-title>Course</h3>
         <div class="chip-group">
+          <span class="chip diff-beginner" data-difficulty-chip>Game Difficulty: Beginner</span>
           <span class="chip blue" data-course-xp>XP 0</span>
           <span class="chip orange" data-course-coins>Coins 0</span>
         </div>
@@ -102,14 +103,19 @@
       </div>
 
       <div class="completion" data-completion style="display:none">
-        <div class="celebrate">
+        <div class="celebrate quest-banner">
           <div class="trophy" aria-hidden="true"><img class="trophy-icon" src="images/trophy.png" alt=""></div>
-          <h3>Course Completed <span class="ms">celebration</span></h3>
+          <h3 class="quest-title">Quest Completed <img class="icon-img" src="images/complete.png" alt="Completed"></h3>
+          <span class="rarity-badge" data-rarity>COMMON</span>
         </div>
-        <p class="summary" data-completion-summary>+0 XP • +0 coins</p>
+        <!-- Summary removed to avoid duplication; loot chips show XP and Coins -->
+        <div class="loot-chips" data-loot-chips>
+          <span class="loot-chip xp"><img class="xp-icon" src="images/exp.png" alt="XP"> XP +0</span>
+          <span class="loot-chip coins"><img class="coin-icon" src="images/coin.png" alt="Coins"> Coins +0</span>
+        </div>
         <div class="actions">
-          <a href="rewards.html" class="btn primary">Go to Rewards</a>
-          <a href="learn.html" class="btn">Back to Learn</a>
+          <a href="rewards.html" class="btn sapphire">Go to Rewards</a>
+          <a href="learn.html" class="btn alt">Back to Learn</a>
         </div>
       </div>
     </section>
