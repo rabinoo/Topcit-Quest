@@ -1,6 +1,12 @@
 import os
 import json
 import os
+try:
+    # Load environment variables from a .env file if present
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
