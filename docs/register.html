@@ -91,6 +91,31 @@
       return /(\+63\s?9\d{2}\s?\d{3}\s?\d{4}|09\d{2}\s?\d{3}\s?\d{4})$/.test(v.trim());
     }
     function setFieldError(el, has){ if(el) el.classList.toggle('error', !!has); }
+    // Phone input helpers: enforce '+63 ' prefix and treat prefix-only as empty
+    const PH_PREFIX = '+63 ';
+    function normalizePhoneInput(v){
+      const t = String(v||'').trim();
+      if(t === '+63') return '';
+      return t;
+    }
+    function setupPhonePrefix(){
+      const input = document.getElementById('reg-phone');
+      if(!input) return;
+      if(!input.value){ input.value = PH_PREFIX; }
+      input.addEventListener('focus', ()=>{
+        const v = String(input.value||'');
+        if(!v || !v.startsWith('+63')){ input.value = PH_PREFIX; }
+        try{ input.setSelectionRange(input.value.length, input.value.length); }catch(_){ }
+      });
+      input.addEventListener('keydown', (e)=>{
+        const pos = input.selectionStart||0;
+        if(pos <= 4 && (e.key === 'Backspace' || e.key === 'Delete')){ e.preventDefault(); }
+      });
+      input.addEventListener('blur', ()=>{
+        const t = normalizePhoneInput(input.value);
+        if(!t){ input.value = ''; }
+      });
+    }
     
     // Local guard to ensure Google Identity script is loaded
     function ensureGsi(cb){
@@ -157,8 +182,26 @@
     
     // Old custom prompt-based Google flow removed; official button is rendered above.
     
-    document.getElementById('register-form').addEventListener('submit', function(e){
+    document.getElementById('register-form').addEventListener('submit', async function(e){
       e.preventDefault();
+      const regBtn = document.querySelector('.auth-actions .btn.primary');
+      const originalBtnText = regBtn ? regBtn.textContent : 'Create account';
+      function setBtnWaiting(on){
+        if(!regBtn) return;
+        if(on){
+          regBtn.textContent = 'Please Wait..';
+          regBtn.disabled = true;
+          regBtn.classList.add('is-waiting');
+          regBtn.style.opacity = '0.7';
+          regBtn.style.pointerEvents = 'none';
+        } else {
+          regBtn.textContent = originalBtnText;
+          regBtn.disabled = false;
+          regBtn.classList.remove('is-waiting');
+          regBtn.style.opacity = '';
+          regBtn.style.pointerEvents = '';
+        }
+      }
       const nameEl = document.getElementById('reg-name');
       const userEl = document.getElementById('reg-username');
       const emailEl = document.getElementById('reg-email');
@@ -170,7 +213,7 @@
       const name = nameEl.value.trim();
       const username = userEl.value.trim();
       const email = emailEl.value.trim();
-      const phone = phoneEl.value.trim();
+      const phone = normalizePhoneInput(phoneEl.value);
       const pass = passEl.value;
       const conf = confEl.value;
 
@@ -192,10 +235,56 @@
 
       if(errors.length){ err.innerHTML = errors.join('<br>'); err.style.display = 'block'; return; }
 
-      saveUser({ name, username, email, phone, provider: 'local' });
-      try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){ }
-      window.location.href = 'index.html';
+      // Create account in database
+      try{
+        setBtnWaiting(true);
+        const resp = await fetch('/api/users/register', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, username, email, password: pass })
+        });
+        const data = await resp.json();
+        if(!resp.ok || !data.ok){
+          err.textContent = data.error || 'Registration failed. Please try a different username/email.';
+          err.style.display = 'block';
+          setBtnWaiting(false);
+          return;
+        }
+        // Trigger verification email after successful registration
+        try{ localStorage.setItem('pending_verification_email', email); }catch(_){}
+        // Show a waiting modal while we start the email verification
+        const sendingModal = showVerificationSendingModal();
+        try{
+          const vResp = await fetch('/api/users/verify/start', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identity: email })
+          });
+          const vData = await vResp.json();
+          if(vResp.ok && vData.ok){
+            // Keep the sending modal visible until redirect
+          }else{
+            try{ sendingModal.close(); }catch(_){}
+            setBtnWaiting(false);
+            err.textContent = 'Account created. Failed to send verification email. Please use the Verify page.';
+            err.style.display = 'block';
+          }
+        }catch(_){
+          try{ sendingModal.close(); }catch(_){}
+          setBtnWaiting(false);
+          err.textContent = 'Account created. Unable to start verification. Please use the Verify page.';
+          err.style.display = 'block';
+        }
+      }catch(ex){
+        err.textContent = 'Registration request failed. Please try again.';
+        err.style.display = 'block';
+        setBtnWaiting(false);
+        return;
+      }
+      // Do NOT auto-login; require email verification before login
+      // Offer next step to verification page
+      setTimeout(()=>{ window.location.href = 'verify.html'; }, 2000);
     });
+    // Initialize phone input prefix behavior
+    setupPhonePrefix();
     
     // No click handler needed for Google; the rendered button manages the flow.
     
@@ -220,7 +309,7 @@
       modal.innerHTML = `
         <div class="modal card" style="max-width: 400px; text-align: center;">
           <div style="margin-bottom: 16px;">
-            <span class="ms" style="font-size: 48px; color: #10b981;">check_circle</span>
+            <img src="images/complete.png" alt="Success" style="width:48px;height:48px;border-radius:8px" />
           </div>
           <h3 style="margin: 0 0 8px; color: var(--text);">Welcome, ${userName}!</h3>
           <p style="margin: 0; color: var(--muted);">Successfully registered with Google. Redirecting...</p>
@@ -236,6 +325,57 @@
         modal.classList.remove('open');
         setTimeout(() => document.body.removeChild(modal), 300);
       }, 1800);
+    }
+
+    // Verification email sent modal
+    function showVerificationSentModal(userName){
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop verify-sent-modal';
+      modal.innerHTML = `
+        <div class="modal card" style="max-width: 420px; text-align: center;">
+          <div style="margin-bottom: 16px;">
+            <span class="ms" style="font-size: 48px; color: #3b82f6;">mark_email_read</span>
+          </div>
+          <h3 style="margin: 0 0 8px; color: var(--text);">Almost there, ${userName}!</h3>
+          <p style="margin: 0; color: var(--muted);">We sent a verification link to your email. Please verify to log in.</p>
+          <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
+            <a href="verify.html" class="btn primary">Go to verification</a>
+            <button class="btn" data-close>Maybe later</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      setTimeout(()=> modal.classList.add('open'), 10);
+      const backdrop = modal;
+      function close(){ backdrop.classList.remove('open'); setTimeout(()=> document.body.removeChild(backdrop), 200); }
+      backdrop.addEventListener('click', (e)=>{ if(e.target === backdrop) close(); });
+      backdrop.querySelector('[data-close]')?.addEventListener('click', close);
+      document.addEventListener('keydown', function handler(ev){ if(ev.key==='Escape'){ close(); document.removeEventListener('keydown', handler); } });
+    }
+
+    // Sending verification email modal (shown during redirect wait)
+    function showVerificationSendingModal(){
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop sending-verification-modal';
+      backdrop.innerHTML = `
+        <div class="modal card" style="max-width: 420px; text-align: center;">
+          <div style="margin-bottom: 16px;">
+            <span class="ms" style="font-size: 48px; color: #3b82f6;">schedule_send</span>
+          </div>
+          <h3 style="margin: 0 0 8px; color: var(--text);">Sending verification email</h3>
+          <p style="margin: 0; color: var(--muted);">Please wait... redirecting to verification.</p>
+        </div>
+      `;
+      document.body.appendChild(backdrop);
+      setTimeout(()=> backdrop.classList.add('open'), 10);
+      return {
+        close(){
+          try{
+            backdrop.classList.remove('open');
+            setTimeout(()=>{ if(backdrop.parentNode) backdrop.parentNode.removeChild(backdrop); }, 200);
+          }catch(_){}
+        }
+      };
     }
   </script>
 </body>

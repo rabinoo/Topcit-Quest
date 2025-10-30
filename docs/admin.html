@@ -62,28 +62,16 @@
   </header>
 
   <main class="container" id="admin-page">
+    <div id="admin-banner" class="chip subtle" style="display:none; margin-bottom:12px"></div>
     <section class="card" id="admin-login" aria-hidden="false">
       <div class="card-head">
-        <h3>Admin Login</h3>
-        <span class="chip subtle">Default: User: Admin • Pass: 000000</span>
+        <h3>Admin Access Required</h3>
+        <span class="chip subtle">Use the general login page</span>
       </div>
-      <form class="builder-form" style="max-width:520px">
-        <label>
-          <div class="topic-title">Username</div>
-          <input type="text" id="admin-username" class="text-input" placeholder="Admin" />
-        </label>
-        <label>
-          <div class="topic-title">Password</div>
-          <div class="password-field">
-            <input type="password" id="admin-password" class="text-input" placeholder="••••••••" />
-            <button type="button" class="password-toggle" id="login-toggle"><span class="ms">visibility</span></button>
-          </div>
-        </label>
-        <div class="auth-actions" style="margin-top:8px">
-          <button class="btn primary" type="button" id="admin-login-btn">Login</button>
-        </div>
-        <div id="admin-login-error" class="topic-desc" style="color:#dc2626;display:none;margin-top:8px">Invalid credentials. Try again.</div>
-      </form>
+      <div class="topic-desc" style="margin-top:6px">Please sign in via the main <a class="link-text" href="login.html">Login</a> page. Admin access requires a verified account with admin role.</div>
+      <div class="auth-actions" style="margin-top:12px">
+        <a class="btn primary" href="login.html">Go to Login</a>
+      </div>
     </section>
 
     <section class="card" id="admin-builder" aria-hidden="true" style="display:none">
@@ -152,16 +140,53 @@
   <script>
     // Simple admin gate using localStorage
     const ADMIN_SESSION_KEY = 'topcit_admin_session';
-    const ADMIN_DEFAULT_USER = 'Admin';
-    const ADMIN_DEFAULT_PASS = '000000';
     const STORAGE_KEY = 'topcit_admin_modules';
     const PUBLISH_KEY = 'topcit_custom_modules';
 
-    function isAdmin(){ try { return localStorage.getItem(ADMIN_SESSION_KEY) === '1'; } catch(_) { return false; } }
-    function tryLogin(u,p){ if(u === ADMIN_DEFAULT_USER && p === ADMIN_DEFAULT_PASS){ localStorage.setItem(ADMIN_SESSION_KEY, '1'); return true; } return false; }
+    function isAdmin(){
+      try{
+        const uRaw = localStorage.getItem('topcit_user');
+        const u = uRaw ? JSON.parse(uRaw) : null;
+        if(u && u.is_admin) return true;
+        return false;
+      }catch(_){ return false; }
+    }
     function readModules(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }catch(_){ return []; } }
     function saveModules(mods){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(mods)); }catch(_){} }
-    function publishModules(){ try{ localStorage.setItem(PUBLISH_KEY, JSON.stringify(readModules())); }catch(_){} }
+    async function publishModules(){
+      const mods = readModules();
+      // Always keep localStorage for offline fallback
+      try{ localStorage.setItem(PUBLISH_KEY, JSON.stringify(mods)); }catch(_){}
+      // Attempt to publish to backend API if available
+      try{
+        let authHeader = {};
+        try{
+          const raw = localStorage.getItem('topcit_user');
+          const u = raw ? JSON.parse(raw) : null;
+          if(u && u.token){ authHeader = { 'Authorization': `Bearer ${u.token}` } }
+        }catch(_){ /* no-op */ }
+        const res = await fetch('/api/modules', {
+          method: 'POST',
+          headers: Object.assign({ 'Content-Type': 'application/json' }, authHeader),
+          body: JSON.stringify(mods)
+        });
+        if(res.ok){
+          const info = await res.json().catch(()=>({ok:true}));
+          console.log('Published to API:', info);
+          // notify
+          const toast = document.getElementById('toast-container');
+          if(toast){
+            const el = document.createElement('div');
+            el.className = 'toast success';
+            el.textContent = 'Published quests to server.';
+            toast.appendChild(el);
+            setTimeout(()=>{ el.remove(); }, 2500);
+          }
+        }else{
+          console.warn('API publish failed:', res.status);
+        }
+      }catch(err){ console.warn('API publish error:', err); }
+    }
 
     function slugify(str){ return (str||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 
@@ -255,29 +280,29 @@
       login.setAttribute('aria-hidden','false');
     }
 
-    window.addEventListener('load', ()=>{
-      // Gate
-      if(isAdmin()) showBuilder(); else showLogin();
+    function setBanner(msg){
+      const b = document.getElementById('admin-banner');
+      if(!b) return;
+      if(msg){ b.textContent = msg; b.style.display = 'inline-flex'; }
+      else { b.style.display = 'none'; b.textContent = ''; }
+    }
 
-      // Login handling
-      const loginBtn = document.getElementById('admin-login-btn');
-      const uEl = document.getElementById('admin-username');
-      const pEl = document.getElementById('admin-password');
-      const errEl = document.getElementById('admin-login-error');
-      const toggle = document.getElementById('login-toggle');
-      if(toggle){ toggle.addEventListener('click', ()=>{ pEl.type = pEl.type === 'password' ? 'text' : 'password'; }); }
-      if(loginBtn){
-        loginBtn.addEventListener('click', ()=>{
-          const u = (uEl.value||'').trim();
-          const p = (pEl.value||'').trim();
-          if(tryLogin(u||ADMIN_DEFAULT_USER, p)){
-            errEl.style.display = 'none';
-            showBuilder();
-          } else {
-            errEl.style.display = 'block';
-          }
-        });
-      }
+    window.addEventListener('load', ()=>{
+      // Gate + banners
+      try{
+        const raw = localStorage.getItem('topcit_user');
+        const u = raw ? JSON.parse(raw) : null;
+        // Redirect to general login when not logged in
+        if(!u){ window.location.href = 'login.html'; return; }
+        if(u && u.email_verified === false){ setBanner('Your email is not verified. Some actions may be restricted.'); }
+        else { setBanner(''); }
+        if(isAdmin()) showBuilder(); else {
+          if(u && !u.is_admin){ setBanner('You are not an admin. Access is limited to module viewing only.'); }
+          showLogin();
+        }
+      }catch(_){ if(isAdmin()) showBuilder(); else showLogin(); }
+
+      // Admin login removed — use general login page
 
       // Builder form
       const form = document.getElementById('module-form');

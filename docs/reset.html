@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Reset | TOPCIT Quest</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <link rel="icon" type="image/png" href="images/coin.png">
+</head>
+<body class="auth-bg">
+  <main class="container auth-page" aria-label="Main">
+    <section class="auth-shell">
+      <aside class="auth-illustration"></aside>
+      <div class="auth-panel card">
+        <div class="auth-brand">
+          <img src="topcit-quest-logo.svg" alt="TOPCIT Quest logo" class="auth-logo" />
+        </div>
+        <h2 style="margin:0 0 8px">Reset your password</h2>
+        <p class="topic-desc" style="margin-bottom:16px">Start a reset or complete using a token.</p>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-head">
+            <h3>Start reset</h3>
+            <span class="chip subtle">Sends a token (shown below in dev)</span>
+          </div>
+          <form id="reset-start-form" style="display:grid;gap:12px">
+            <label>
+              <div class="topic-title" style="font-size:13px">Email</div>
+              <input type="email" id="reset-email" class="text-input" placeholder="you@example.com" required />
+            </label>
+            <div class="auth-actions">
+              <button class="btn primary" type="submit">Send reset token</button>
+            </div>
+            <div id="reset-start-msg" class="topic-desc" style="display:none;color:var(--muted)"></div>
+            <div id="reset-start-error" class="topic-desc" style="display:none;color:#dc2626"></div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Complete reset</h3>
+          </div>
+          <form id="reset-complete-form" style="display:grid;gap:12px">
+            <label>
+              <div class="topic-title" style="font-size:13px">Token</div>
+              <input type="text" id="reset-token" class="text-input" placeholder="Paste token here" required />
+            </label>
+            <label>
+              <div class="topic-title" style="font-size:13px">New password</div>
+              <div class="password-field">
+                <input type="password" id="reset-password" class="text-input" placeholder="••••••••" required />
+                <button type="button" class="password-toggle" id="toggle-reset-pass"><span class="ms">visibility</span></button>
+              </div>
+            </label>
+            <div class="auth-actions">
+              <button class="btn primary" type="submit">Set new password</button>
+            </div>
+            <div id="reset-complete-msg" class="topic-desc" style="display:none;color:var(--muted)"></div>
+            <div id="reset-complete-error" class="topic-desc" style="display:none;color:#dc2626"></div>
+          </form>
+        </div>
+
+        <div style="margin-top:12px;color:var(--muted);font-weight:700">
+          Back to <a href="login.html" class="link-text">Login</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">© 2025 Topcit Quest</footer>
+
+  <script>
+    function setText(el, msg){ if(!el) return; el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+    function getQueryParam(name){ const u = new URL(window.location.href); return u.searchParams.get(name) || ''; }
+    function isValidEmail(v){ return /.+@.+\..+/.test(String(v||'')); }
+
+    function showSuccessModal(title, desc){
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop';
+      modal.innerHTML = `
+        <div class="modal card" style="max-width: 400px; text-align: center;">
+          <div style="margin-bottom: 16px;">
+            <span class="ms" style="font-size: 48px; color: #10b981;">check_circle</span>
+          </div>
+          <h3 style="margin: 0 0 8px; color: var(--text);">${title}</h3>
+          <p style="margin: 0; color: var(--muted);">${desc}</p>
+        </div>`;
+      document.body.appendChild(modal);
+      setTimeout(()=> modal.classList.add('open'), 10);
+      setTimeout(()=>{ modal.classList.remove('open'); setTimeout(()=> document.body.removeChild(modal), 250); }, 1800);
+    }
+
+    // Start reset
+    const startForm = document.getElementById('reset-start-form');
+    const startMsg = document.getElementById('reset-start-msg');
+    const startErr = document.getElementById('reset-start-error');
+    const emailEl = document.getElementById('reset-email');
+    startForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      setText(startErr, ''); setText(startMsg, '');
+      const email = String(emailEl.value||'').trim();
+      if(!isValidEmail(email)){ setText(startErr, 'Enter a valid email.'); return; }
+      try{
+        const resp = await fetch('/api/users/reset/start', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identity: email })
+        });
+        const data = await resp.json();
+        if(!resp.ok || !data.ok){ setText(startErr, 'Reset start failed.'); return; }
+        const token = data.token || '';
+        setText(startMsg, token ? `Token (dev): ${token}. Use it below to complete reset.` : 'Reset started. Check your email.');
+        if(token){ document.getElementById('reset-token').value = token; }
+      }catch(_){ setText(startErr, 'Request failed. Try again.'); }
+    });
+
+    // Complete reset
+    const completeForm = document.getElementById('reset-complete-form');
+    const tokenEl = document.getElementById('reset-token');
+    const passEl = document.getElementById('reset-password');
+    const completeMsg = document.getElementById('reset-complete-msg');
+    const completeErr = document.getElementById('reset-complete-error');
+    const toggleBtn = document.getElementById('toggle-reset-pass');
+    toggleBtn.addEventListener('click', ()=>{ passEl.type = passEl.type === 'password' ? 'text' : 'password'; });
+
+    completeForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      setText(completeErr, ''); setText(completeMsg, '');
+      const token = String(tokenEl.value||'').trim();
+      const password = String(passEl.value||'');
+      if(!token){ setText(completeErr, 'Token is required.'); return; }
+      if(!password || password.length < 6){ setText(completeErr, 'Password must be at least 6 characters.'); return; }
+      try{
+        const resp = await fetch('/api/users/reset/complete', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, password })
+        });
+        const data = await resp.json();
+        if(!resp.ok || !data.ok){ setText(completeErr, 'Reset failed. Invalid or expired token.'); return; }
+        setText(completeMsg, 'Password updated! You can now log in.');
+        showSuccessModal('Password updated!', 'Redirecting to login…');
+        setTimeout(()=>{ window.location.href = 'login.html'; }, 1500);
+      }catch(_){ setText(completeErr, 'Request failed. Try again.'); }
+    });
+
+    // Pre-fill token from URL if present
+    window.addEventListener('load', ()=>{
+      const t = getQueryParam('token');
+      if(t){ tokenEl.value = t; }
+    });
+  </script>
+</body>
+</html>

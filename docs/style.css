@@ -1343,3 +1343,17 @@ body.page-enter{opacity:1; transform:none}
 
 
 
+/* Verify page specific centering */
+.auth-shell.verify-shell{grid-template-columns:1fr;max-width:720px;margin-left:auto;margin-right:auto;justify-content:center}
+.auth-shell.verify-shell .auth-illustration{display:none}
+.auth-panel.verify-panel{align-items:center;text-align:center}
+.auth-panel.verify-panel .card{width:100%;max-width:560px;margin-left:auto;margin-right:auto}
+.auth-panel.verify-panel .card .card-head{justify-content:center}
+.auth-panel.verify-panel h2, .auth-panel.verify-panel .topic-desc{text-align:center}
+.auth-panel.verify-panel #verify-start-form, .auth-panel.verify-panel #verify-complete-form{max-width:520px;margin-left:auto;margin-right:auto}
+/* Verify actions: center buttons without full width */
+.auth-panel.verify-panel .auth-actions{display:flex;justify-content:center}
+.auth-panel.verify-panel .auth-actions .btn{width:auto;min-width:220px}
+
+
+

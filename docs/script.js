@@ -33,6 +33,7 @@
       localStorage.setItem(LEVEL_IDX_KEY, String(levelIdx));
       localStorage.setItem(XP_IN_LEVEL_KEY, String(xpInLevel));
     }catch(_){}
+    scheduleProgressPush();
   }
   function requiredXpForRank(rank){
     const r = Math.max(1, Math.min(MAX_RANK, parseInt(rank,10) || 1));
@@ -104,6 +105,7 @@
     if(gainedXpEl){ gainedXpEl.textContent = `+${inc}`; }
     if(xpTotalEl){ animateNumber(xpTotalEl, currentDisplay, xpTotal, 600); }
     saveProgress();
+    scheduleProgressPush();
     if(didLevel){
       showToast(`Rank up! You are now Rank ${rank}.`, 'success');
       showRankUp(`Rank ${rank}`);
@@ -513,12 +515,14 @@
     if(gainedXpEl){ gainedXpEl.textContent = `+${inc}`; }
     if(xpTotalEl){ animateNumber(xpTotalEl, currentDisplay, xpTotal, 600); }
     saveProgress();
+    scheduleProgressPush();
     if(didLevel){
       // Credit awarded coins to wallet and refresh store filters
       if(coinsGained > 0){
         setWallet(getWallet() + coinsGained);
         filterAffordableStoreItems();
         limitDashboardStoreItems();
+        scheduleProgressPush();
       }
       showToast(`Rank up! You are now Rank ${rank}.`, 'success');
       showRankUp(`Rank ${rank}`, coinsGained);
@@ -613,6 +617,7 @@
     const safe = Math.max(0, parseInt(value,10) || 0);
     if(walletAmountEl){ walletAmountEl.textContent = safe.toLocaleString(); }
     try{ localStorage.setItem(WALLET_KEY, String(safe)); }catch(_){}
+    scheduleProgressPush();
   }
   function loadWallet(){
     const domDefault = parseInt((walletAmountEl?.textContent || '0').replace(/,/g,''),10) || 0;
@@ -718,6 +723,11 @@
       return;
     }
     setWallet(have - cost);
+    scheduleProgressPush();
+    try{
+      const name = el.querySelector('.name')?.textContent?.trim() || 'reward';
+      logActivity({ event_type: 'redeem', course_id: null, xp_awarded: 0, coins_awarded: -cost, metadata: { item: name, cost } });
+    }catch(_){ }
     // Re-filter store items after wallet changes
     filterAffordableStoreItems();
     limitDashboardStoreItems();
@@ -1584,6 +1594,9 @@
       }
       addXp(xp);
       setWallet(getWallet() + coins);
+      scheduleProgressPush();
+      // Log course completion to server for analytics
+      logActivity({ course_id: id, event_type: 'course_completed', xp_awarded: xp, coins_awarded: coins, metadata: { title: meta.title || id } });
       // Record course completion for Learn page
       addCompletedCourse(id);
       removeOngoingCourse(id);
@@ -1845,6 +1858,54 @@ const AUTH_KEY = 'topcit_user';
 function getAuthUser(){
   try{ const raw = localStorage.getItem(AUTH_KEY); return raw ? JSON.parse(raw) : null; }catch(_){ return null; }
 }
+function getAuthUserId(){ try{ return (getAuthUser()||{}).id || ''; }catch(_){ return ''; } }
+function getAuthToken(){ try{ return (getAuthUser()||{}).token || ''; }catch(_){ return ''; } }
+async function logActivity(activity){
+  const token = getAuthToken();
+  if(!token) return;
+  try{
+    await fetch('/api/users/activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(activity)
+    });
+  }catch(_){ }
+}
+// Push progress to server (debounced)
+let __progressTimer = null;
+function scheduleProgressPush(){
+  const token = getAuthToken();
+  if(!token) return;
+  if(__progressTimer) clearTimeout(__progressTimer);
+  __progressTimer = setTimeout(()=>{
+    try{
+      const wallet = getWallet();
+      fetch('/api/users/progress', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ xp_total: xpTotal, level_idx: levelIdx, xp_in_level: xpInLevel, wallet })
+      }).catch(()=>{});
+    }catch(_){ }
+  }, 400);
+}
+
+async function syncUserProgressFromServer(){
+  const token = getAuthToken();
+  if(!token) return;
+  try{
+    const resp = await fetch(`/api/users/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+    if(!resp.ok) return;
+    const u = await resp.json();
+    // Update local state and UI from server
+    xpTotal = parseInt(u.xp_total||0,10) || 0;
+    levelIdx = parseInt(u.level_idx||0,10) || 0;
+    xpInLevel = parseInt(u.xp_in_level||0,10) || 0;
+    saveProgress();
+    setLevel(levelIdx);
+    if(xpTotalEl){ xpTotalEl.textContent = xpTotal.toLocaleString(); }
+    const w = parseInt(u.wallet||0,10) || 0;
+    setWallet(w);
+  }catch(_){ }
+}
 function isAuthPage(){
   const name = location.pathname.split('/').pop().toLowerCase();
   return name === 'login.html' || name === 'register.html' || name === 'admin.html';
@@ -1916,6 +1977,8 @@ function enforceAuthLanding(){
 
 // Run early to avoid flash of protected pages
 window.addEventListener('DOMContentLoaded', enforceAuthLanding);
+// Load server-side progress for logged-in users
+window.addEventListener('load', syncUserProgressFromServer);
 
 // ---- Theme Preference & Settings Modal ----
 const THEME_KEY = 'topcit_theme';
@@ -2112,6 +2175,22 @@ function seedDefaultModules(){
   try{ localStorage.setItem('topcit_admin_modules', JSON.stringify(defaults)); }catch(_){}
 }
 window.addEventListener('load', seedDefaultModules);
+// Attempt to sync published modules from server (Neon) into localStorage
+async function syncModulesFromServer(){
+  try{
+    const res = await fetch('/api/modules', { headers: { 'Accept': 'application/json' } });
+    if(!res.ok) return; // keep localStorage fallback
+    const data = await res.json();
+    if(Array.isArray(data) && data.length > 0){
+      try{ localStorage.setItem('topcit_custom_modules', JSON.stringify(data)); }catch(_){}
+      try{ localStorage.setItem('topcit_admin_modules', JSON.stringify(data)); }catch(_){}
+    }
+  }catch(_){ /* ignore; offline or API not available */ }
+}
+window.addEventListener('load', ()=>{ syncModulesFromServer().then(()=>{
+  // After potential sync, re-render All grid if present
+  try{ renderCustomModulesIntoAllGrid(); }catch(_){}
+}); });
 // Render admin-published custom modules before binding Learn interactions
 function renderCustomModulesIntoAllGrid(){
   const onLearnPage = !!document.querySelector('main .card .learn-grid, [data-completed-grid]');
@@ -2287,7 +2366,7 @@ function showLogoutSuccessModal() {
   modal.innerHTML = `
     <div class="modal card" style="max-width: 400px; text-align: center;">
       <div style="margin-bottom: 16px;">
-        <span class="ms" style="font-size: 48px; color: #10b981;">check_circle</span>
+        <img src="images/complete.png" alt="Success" style="width:48px;height:48px;border-radius:8px" />
       </div>
       <h3 style="margin: 0 0 8px; color: var(--text);">Logged Out Successfully</h3>
       <p style="margin: 0; color: var(--muted);">You have been logged out. Redirecting to login...</p>

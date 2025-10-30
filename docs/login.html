@@ -49,7 +49,11 @@
           <div style="margin-top:12px;color:var(--muted);font-weight:700">
             Don't have an account? <a href="register.html" class="link-text">Register</a>
           </div>
+          <div style="margin-top:6px;color:var(--muted);font-weight:700">
+            Need help? <a href="reset.html" class="link-text">Reset password</a>
+          </div>
           <div id="login-error" class="topic-desc" style="color:#dc2626;display:none;margin-top:8px">Invalid credentials. Try again.</div>
+          <div id="login-hint" class="topic-desc" style="display:none;margin-top:8px;color:#b45309"></div>
         </form>
       </div>
     </section>
@@ -133,46 +137,83 @@
     
     // Removed custom click-to-prompt flow; the official Google button is rendered above.
     
-    document.getElementById('login-form').addEventListener('submit', function(e){
+    document.getElementById('login-form').addEventListener('submit', async function(e){
       e.preventDefault();
       const uEl = document.getElementById('login-username');
       const pEl = document.getElementById('login-password');
-      const u = uEl.value.trim();
-      const p = pEl.value;
+      const identity = uEl.value.trim();
+      const password = pEl.value;
       const err = document.getElementById('login-error');
       err.style.display = 'none';
       err.innerHTML = '';
       setFieldError(uEl,false); setFieldError(pEl,false);
 
       const errors = [];
-      if(!isValid(u)){ errors.push('Enter your username or email.'); setFieldError(uEl,true); }
-      else if(u.includes('@') && !isValidEmail(u)){ errors.push('Enter a valid email address.'); setFieldError(uEl,true); }
-      if(!isValid(p)){ errors.push('Password is required.'); setFieldError(pEl,true); }
-      else if(p.length < 6){ errors.push('Password must be at least 6 characters.'); setFieldError(pEl,true); }
+      if(!isValid(identity)){ errors.push('Enter your username or email.'); setFieldError(uEl,true); }
+      else if(identity.includes('@') && !isValidEmail(identity)){ errors.push('Enter a valid email address.'); setFieldError(uEl,true); }
+      if(!isValid(password)){ errors.push('Password is required.'); setFieldError(pEl,true); }
+      else if(password.length < 6){ errors.push('Password must be at least 6 characters.'); setFieldError(pEl,true); }
 
       if(errors.length){ err.innerHTML = errors.join('<br>'); err.style.display = 'block'; return; }
 
-      // Admin login routing: default credentials go to admin page
-      try {
-        if (u === 'Admin' && p === '000000') {
-          localStorage.setItem('topcit_admin_session', '1');
-          localStorage.setItem('topcit_notice', 'logged_in');
-          window.location.href = 'admin.html';
+      try{
+        const resp = await fetch('/api/users/login', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identity, password })
+        });
+        const data = await resp.json();
+        // Unverified email gating from server
+        if(resp.status === 403 && data && data.needs_verification){
+          err.style.display = 'none';
+          const hint = document.getElementById('login-hint');
+          if(hint){
+            hint.innerHTML = 'Your email is not verified. Please check your inbox for the verification link, or <button class="btn" id="resend-verify-btn" style="padding:4px 10px">Resend email</button>.';
+            hint.style.display = 'block';
+            const btn = document.getElementById('resend-verify-btn');
+            btn?.addEventListener('click', async ()=>{
+              try{
+                const vResp = await fetch('/api/users/verify/start', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ identity })
+                });
+                const vData = await vResp.json();
+                if(vResp.ok && vData.ok){
+                  hint.innerHTML = 'Verification email resent. Please check your inbox.';
+                }else{
+                  hint.innerHTML = 'Unable to resend email. Please use the <a class="link-text" href="verify.html">verification page</a>.';
+                }
+              }catch(_){ hint.innerHTML = 'Request failed. Please use the <a class="link-text" href="verify.html">verification page</a>.'; }
+            });
+          }
+          try { showVerificationNudgeModal(identity); } catch(_){ }
           return;
         }
-      } catch(_){ }
-
-      // Preserve full name if previously registered, allow login via username or email
-      let existing = null;
-      try{ const raw = localStorage.getItem('topcit_user'); existing = raw ? JSON.parse(raw) : null; }catch(_){ existing = null; }
-      const isEmail = u.includes('@');
-      const next = Object.assign({}, existing || {});
-      next.provider = 'local';
-      if(isEmail){ next.email = u; } else { next.username = u; }
-      if(!next.name){ next.name = isEmail ? (existing?.name || u) : (existing?.name || next.username || u); }
-      saveUser(next);
-      try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){}
-      window.location.href = 'index.html';
+        if(!resp.ok || !data.ok){
+          err.textContent = data.error || 'Invalid credentials. Try again.';
+          err.style.display = 'block';
+          return;
+        }
+        // Store DB-backed user
+        const user = Object.assign({ provider: 'db' }, data.user || {});
+        if(data.token){ user.token = data.token; }
+        saveUser(user);
+        try{ localStorage.setItem('topcit_notice','logged_in'); }catch(_){}
+        const hint = document.getElementById('login-hint');
+        if(user && user.email_verified === false){
+          if(hint){
+            hint.innerHTML = 'Your email is not verified. Some features may be limited. Please <a class="link-text" href="verify.html">verify your email</a>.';
+            hint.style.display = 'block';
+          }
+          // Prominent nudge modal to encourage verification
+          try { showVerificationNudgeModal(user.name || identity); } catch(_){ }
+          return; // keep user on login page to encourage verification
+        }
+        try{ showLoginSuccessModal(user.name || identity); }catch(_){ }
+        setTimeout(()=>{ window.location.href = 'index.html'; }, 1500);
+      }catch(ex){
+        err.textContent = 'Login request failed. Please try again.';
+        err.style.display = 'block';
+      }
     });
     
     // Custom Google button removed; no click handler needed.
@@ -198,7 +239,7 @@
       modal.innerHTML = `
         <div class="modal card" style="max-width: 400px; text-align: center;">
           <div style="margin-bottom: 16px;">
-            <span class="ms" style="font-size: 48px; color: #10b981;">check_circle</span>
+            <img src="images/complete.png" alt="Success" style="width:48px;height:48px;border-radius:8px" />
           </div>
           <h3 style="margin: 0 0 8px; color: var(--text);">Welcome back, ${userName}!</h3>
           <p style="margin: 0; color: var(--muted);">Successfully logged in with Google. Redirecting...</p>
@@ -214,6 +255,55 @@
         modal.classList.remove('open');
         setTimeout(() => document.body.removeChild(modal), 300);
       }, 1800);
+    }
+    
+    // Verification nudge modal
+    function showVerificationNudgeModal(userName){
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop verify-nudge-modal';
+      modal.innerHTML = `
+        <div class="modal card" style="max-width: 460px; text-align: center;">
+          <div style="margin-bottom: 16px;">
+            <span class="ms" style="font-size: 48px; color: #b45309;">warning</span>
+          </div>
+          <h3 style="margin: 0 0 8px; color: var(--text);">Verify your email${userName?`, ${userName}`:''}</h3>
+          <p style="margin: 0 0 12px; color: var(--muted);">To fully access features and admin tools, please verify your email.</p>
+          <div style="display:flex; gap:8px; justify-content:center;">
+            <a class="btn primary" href="verify.html">Go to verification</a>
+            <button class="btn" id="close-verify-nudge">Maybe later</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      setTimeout(()=> modal.classList.add('open'), 10);
+      const close = ()=>{
+        modal.classList.remove('open');
+        setTimeout(()=>{ try{ document.body.removeChild(modal); }catch(_){ } }, 300);
+      };
+      modal.addEventListener('click', (e)=>{ if(e.target === modal) close(); });
+      const btn = modal.querySelector('#close-verify-nudge');
+      if(btn) btn.addEventListener('click', close);
+    }
+
+    // Login success modal (DB login)
+    function showLoginSuccessModal(userName){
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop login-success-modal';
+      modal.innerHTML = `
+        <div class="modal card" style="max-width: 420px; text-align: center;">
+          <div style="margin-bottom: 16px;">
+            <img src="images/complete.png" alt="Success" style="width:48px;height:48px;border-radius:8px" />
+          </div>
+          <h3 style="margin: 0 0 8px; color: var(--text);">Login successful</h3>
+          <p style="margin: 0; color: var(--muted);">Redirecting to dashboard…</p>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      setTimeout(()=> modal.classList.add('open'), 10);
+      setTimeout(()=>{
+        modal.classList.remove('open');
+        setTimeout(()=>{ try{ document.body.removeChild(modal); }catch(_){ } }, 250);
+      }, 1400);
     }
   </script>
 </body>

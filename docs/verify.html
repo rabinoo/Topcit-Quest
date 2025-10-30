@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Verification | TOPCIT Quest</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  <link rel="icon" type="image/png" href="images/coin.png">
+</head>
+<body class="auth-bg">
+  <main class="container auth-page" aria-label="Main">
+    <section class="auth-shell">
+      <aside class="auth-illustration"></aside>
+      <div class="auth-panel card verify-panel">
+        <div class="auth-brand">
+          <img src="topcit-quest-logo.svg" alt="TOPCIT Quest logo" class="auth-logo" />
+        </div>
+        <h2 style="margin:0 0 8px; text-align:center">Verify your email</h2>
+        <p class="topic-desc" style="margin-bottom:16px; text-align:center">Enter your email and we’ll send a verification link.</p>
+
+        <div id="verify-pending" class="card" style="display:none;margin-bottom:12px">
+          <div class="card-head" style="align-items:center;gap:8px">
+            <h3 style="margin:0">Pending verification</h3>
+          </div>
+          <div class="topic-desc" style="color:var(--muted)">
+            We detected a pending email: <strong id="pending-email-text"></strong>.
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+            <button id="resend-verify-btn" class="btn">Resend verification</button>
+            <a href="#" id="use-pending-fill" class="link-text">Use this email below</a>
+          </div>
+          <div id="pending-action-msg" class="topic-desc" style="display:none;color:var(--muted);margin-top:8px"></div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-head" style="justify-content:center">
+            <h3>Start verification</h3>
+          </div>
+          <form id="verify-start-form" style="display:grid;gap:12px; max-width:520px; margin:0 auto">
+            <label>
+              <div class="topic-title" style="font-size:13px">Email</div>
+              <input type="email" id="verify-email" class="text-input" placeholder="you@example.com" required />
+            </label>
+            <div class="auth-actions" style="grid-template-columns:1fr; justify-content:center">
+              <button class="btn primary" type="submit">Send verification token</button>
+            </div>
+            <div id="verify-start-msg" class="topic-desc" style="display:none;color:var(--muted)"></div>
+            <div id="verify-start-error" class="topic-desc" style="display:none;color:#dc2626"></div>
+          </form>
+        </div>
+
+        
+
+        <div style="margin-top:12px;color:var(--muted);font-weight:700">
+          Back to <a href="login.html" class="link-text">Login</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">© 2025 Topcit Quest</footer>
+
+  <script>
+    function setText(el, msg){ if(!el) return; el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+    function getQueryParam(name){ const u = new URL(window.location.href); return u.searchParams.get(name) || ''; }
+    function isValidEmail(v){ return /.+@.+\..+/.test(String(v||'')); }
+
+    function showSuccessModal(title, desc){
+      const modal = document.createElement('div');
+      modal.className = 'modal-backdrop';
+      modal.innerHTML = `
+        <div class="modal card" style="max-width: 400px; text-align: center;">
+          <div style="margin-bottom: 16px;">
+            <img src="images/complete.png" alt="Success" style="width:48px;height:48px;border-radius:8px" />
+          </div>
+          <h3 style="margin: 0 0 8px; color: var(--text);">${title}</h3>
+          <p style="margin: 0; color: var(--muted);">${desc}</p>
+        </div>`;
+      document.body.appendChild(modal);
+      setTimeout(()=> modal.classList.add('open'), 10);
+      setTimeout(()=>{ modal.classList.remove('open'); setTimeout(()=> document.body.removeChild(modal), 250); }, 1800);
+    }
+
+    const startForm = document.getElementById('verify-start-form');
+    const startMsg = document.getElementById('verify-start-msg');
+    const startErr = document.getElementById('verify-start-error');
+    const emailEl = document.getElementById('verify-email');
+    const pendingCard = document.getElementById('verify-pending');
+    const pendingText = document.getElementById('pending-email-text');
+    const pendingMsg = document.getElementById('pending-action-msg');
+    const resendBtn = document.getElementById('resend-verify-btn');
+    const fillLink = document.getElementById('use-pending-fill');
+
+    startForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      setText(startErr, ''); setText(startMsg, '');
+      const email = String(emailEl.value||'').trim();
+      if(!isValidEmail(email)){ setText(startErr, 'Enter a valid email.'); return; }
+      try{
+        const resp = await fetch('/api/users/verify/start', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identity: email })
+        });
+        const data = await resp.json();
+        if(!resp.ok || !data.ok){
+          if(resp.status === 404){
+            // Provide a direct link to registration when email is missing
+            startErr.innerHTML = 'Email not found. <a class="link-text" href="register.html">Register now</a>.';
+            startErr.style.display = 'block';
+          }else if(resp.status === 503){
+            setText(startErr, 'Service unavailable. Please try again shortly.');
+          }else{
+            setText(startErr, 'Verification start failed.');
+          }
+          return;
+        }
+        setText(startMsg, 'Verification started. Check your email.');
+      }catch(_){ setText(startErr, 'Request failed. Try again.'); }
+    });
+
+    const completeForm = document.getElementById('verify-complete-form');
+    const tokenEl = document.getElementById('verify-token');
+    const completeMsg = document.getElementById('verify-complete-msg');
+    const completeErr = document.getElementById('verify-complete-error');
+
+    async function completeVerify(token){
+      setText(completeErr, ''); setText(completeMsg, '');
+      const t = String(token||'').trim();
+      if(!t){ setText(completeErr, 'Token is required.'); return; }
+      try{
+        // Server expects POST with token in query string
+        const resp = await fetch(`/api/users/verify?token=${encodeURIComponent(t)}`, { method: 'POST' });
+        const data = await resp.json();
+        if(!resp.ok || !data.ok){ setText(completeErr, 'Verification failed. Invalid or expired token.'); return; }
+        setText(completeMsg, 'Email verified! You can now log in.');
+        showSuccessModal('Email verified!', 'Redirecting to login…');
+        setTimeout(()=>{ window.location.href = 'login.html'; }, 1500);
+      }catch(_){ setText(completeErr, 'Request failed. Try again.'); }
+    }
+
+    if(completeForm){ completeForm.addEventListener('submit', (e)=>{ e.preventDefault(); completeVerify(tokenEl?.value); }); }
+
+    // Auto-complete if token is in the URL
+    window.addEventListener('load', ()=>{
+      const t = getQueryParam('token');
+      if(t){ if(tokenEl) tokenEl.value = t; completeVerify(t); }
+
+      // Show pending verification reminder if available
+      let pending = '';
+      try{ pending = localStorage.getItem('pending_verification_email') || ''; }catch(_){ pending = ''; }
+      if(pending && isValidEmail(pending)){
+        pendingText.textContent = pending;
+        pendingCard.style.display = 'block';
+        // Prefill email input by default
+        emailEl.value = pending;
+        // Handlers
+        fillLink?.addEventListener('click', (e)=>{ e.preventDefault(); emailEl.value = pending; });
+        resendBtn?.addEventListener('click', async ()=>{
+          setText(pendingMsg, '');
+          try{
+            const resp = await fetch('/api/users/verify/start', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ identity: pending })
+            });
+            const data = await resp.json();
+            if(resp.ok && data.ok){
+              setText(pendingMsg, 'Verification email resent. Please check your inbox.');
+            }else{
+              if(resp.status === 404){
+                pendingMsg.innerHTML = 'Email not found. <a class="link-text" href="register.html">Register now</a>.';
+                pendingMsg.style.display = 'block';
+              }else if(resp.status === 503){
+                setText(pendingMsg, 'Service unavailable. Please try again shortly.');
+              }else{
+                setText(pendingMsg, 'Unable to resend. Please use the form below.');
+              }
+            }
+          }catch(_){ setText(pendingMsg, 'Request failed. Please try again.'); }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
