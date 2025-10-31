@@ -3,11 +3,6 @@
   "functions": {
     "api/**/*.py": { "runtime": "python3.11" }
   },
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/", "dest": "/login.html" },
-    { "src": "/(.*)", "dest": "/$1" }
-  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/", "destination": "/login.html" },
