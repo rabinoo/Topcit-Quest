@@ -1966,8 +1966,8 @@ function promptGoogleLoginIfNoUser(){
 function enforceAuthLanding(){
   const user = getAuthUser();
   if(!user && !isAuthPage()){
-    // Attempt Google login prompt first; fallback redirect handled internally
-    promptGoogleLoginIfNoUser();
+    // Immediately redirect unauthenticated visitors to the login page
+    redirectTo('login.html');
     return;
   }
   if(user && isAuthPage()){
