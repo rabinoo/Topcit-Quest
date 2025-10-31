@@ -2114,12 +2114,13 @@ function setupLogout(){
         confirmText: 'Logout',
         cancelText: 'Cancel',
         onConfirm(){
-          showLogoutSuccessModal();
-          setTimeout(() => {
-            try{ localStorage.setItem('topcit_notice','logged_out'); }catch(_){}
-            try{ localStorage.removeItem('topcit_user'); }catch(_){}
-            redirectTo('login.html');
-          }, 2000);
+          // Fast logout: set flag, clear user, and redirect immediately
+          try{ localStorage.setItem('topcit_notice','logged_out'); }catch(_){}
+          try{ localStorage.removeItem('topcit_user'); }catch(_){}
+          // Clear local XP/level and wallet state on logout
+          try{ resetProgressToNovice(); }catch(_){}
+          try{ setWallet(0); }catch(_){}
+          redirectTo('login.html');
         }
       });
     });
