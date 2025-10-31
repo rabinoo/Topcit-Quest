@@ -13,5 +13,8 @@
     { "source": "/", "destination": "/docs/login.html" },
     { "source": "/(.*)", "destination": "/docs/$1" }
   ],
+  "redirects": [
+    { "source": "/", "destination": "/docs/login.html", "statusCode": 308 }
+  ],
   "cleanUrls": true
 }
