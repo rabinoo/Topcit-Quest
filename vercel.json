@@ -5,12 +5,12 @@
   },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/", "dest": "/docs/index.html" },
+    { "src": "/", "dest": "/docs/login.html" },
     { "src": "/(.*)", "dest": "/docs/$1" }
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/", "destination": "/docs/index.html" },
+    { "source": "/", "destination": "/docs/login.html" },
     { "source": "/(.*)", "destination": "/docs/$1" }
   ],
   "cleanUrls": true
