@@ -5,16 +5,16 @@
   },
   "routes": [
     { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/", "dest": "/docs/login.html" },
-    { "src": "/(.*)", "dest": "/docs/$1" }
+    { "src": "/", "dest": "/login.html" },
+    { "src": "/(.*)", "dest": "/$1" }
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/", "destination": "/docs/login.html" },
-    { "source": "/(.*)", "destination": "/docs/$1" }
+    { "source": "/", "destination": "/login.html" },
+    { "source": "/(.*)", "destination": "/$1" }
   ],
   "redirects": [
-    { "source": "/", "destination": "/docs/login.html", "statusCode": 308 }
+    { "source": "/", "destination": "/login.html", "statusCode": 308 }
   ],
   "cleanUrls": true
 }
