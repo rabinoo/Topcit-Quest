@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler
 import json
 
 from api._utils import db_connect, json_response, verify_password, issue_session_token
+from api._schema import ensure_schema
 
 
 class handler(BaseHTTPRequestHandler):
@@ -17,6 +18,9 @@ class handler(BaseHTTPRequestHandler):
         password = str(payload.get('password') or '')
         if not identity or not password:
             return json_response(self, 400, { 'ok': False, 'error': 'Missing credentials' })
+
+        # Ensure DB schema exists (safe to call per-request)
+        ensure_schema()
 
         conn = db_connect()
         if not conn:

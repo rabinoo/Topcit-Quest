@@ -4,6 +4,7 @@ import hashlib
 import uuid
 
 from api._utils import db_connect, json_response
+from api._schema import ensure_schema
 
 try:
     import bcrypt  # optional; fallback to sha256
@@ -41,6 +42,9 @@ class handler(BaseHTTPRequestHandler):
                 pwd_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
         except Exception:
             return json_response(self, 500, { 'ok': False, 'error': 'Failed to hash password' })
+
+        # Ensure DB schema exists (safe to call per-request)
+        ensure_schema()
 
         conn = db_connect()
         if not conn:
