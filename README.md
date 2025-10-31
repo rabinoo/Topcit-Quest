@@ -36,3 +36,29 @@ Notes:
   - `DATABASE_URL`: PostgreSQL connection string (Neon works). Ensure `sslmode=require`.
   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_USE_SSL`.
   - Do not set `PORT` on Render; Render provides it automatically.
+## Deploy to Vercel
+
+This repo is configured to host the static frontend from `docs/` and expose Python Serverless Functions under `/api/*` on Vercel.
+
+- Static site root: `docs/` (e.g., `index.html`, `verify.html`).
+- API routes: Python files in `api/` using Vercel’s Python runtime (`vercel.json` included).
+
+Ported endpoints
+- `POST /api/users/verify/start` — generates a token and sends a verification email.
+- `POST /api/users/verify?token=...` — completes email verification.
+
+Environment variables (set in Vercel → Project → Settings → Environment Variables)
+- `DATABASE_URL` — Neon/Postgres connection string.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SMTP_USE_SSL` — SMTP settings.
+
+Dependencies
+- Vercel installs Python packages from `requirements.txt`.
+
+Deploy steps
+- Push the repo to GitHub and import into Vercel.
+- No build command needed; `vercel.json` routes `/` to `docs/index.html` and `/(.*)` to `docs/$1`.
+- After deployment, your site will be live at `https://<project>.vercel.app/`.
+
+Notes
+- Verification emails link to `verify.html` on your Vercel domain and include a direct API completion link.
+- More endpoints from `server.py` can be migrated by adding Python files under `api/`.

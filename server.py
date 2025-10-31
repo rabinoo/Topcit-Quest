@@ -2,9 +2,16 @@ import os
 import json
 import os
 try:
-    # Load environment variables from a .env file if present
+    # Load environment variables from a .env file if present.
+    # First load local project .env (development), then override with Render Secret File if available.
     from dotenv import load_dotenv
+    # Local .env in project root
     load_dotenv()
+    # Render Secret Files are typically mounted under /etc/secrets/<filename>.
+    # Allow override via DOTENV_PATH env var, defaulting to /etc/secrets/.env
+    secret_env_path = os.environ.get('DOTENV_PATH', '/etc/secrets/.env')
+    if os.path.exists(secret_env_path):
+        load_dotenv(secret_env_path, override=True)
 except Exception:
     pass
 import smtplib
