@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler
 import json
 
 from api._utils import db_connect, json_response, get_bearer_token, get_user_by_token
+from api._schema import ensure_schema
 
 
 def _fetch_modules():
@@ -52,6 +53,8 @@ def _upsert_modules(mods):
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        # Ensure schema exists for module_store
+        ensure_schema()
         # Return published modules from DB; 503 if DB unavailable
         data = _fetch_modules()
         if data is None:
@@ -59,6 +62,8 @@ class handler(BaseHTTPRequestHandler):
         return json_response(self, 200, data if isinstance(data, list) else [])
 
     def do_POST(self):
+        # Ensure schema exists for module_store
+        ensure_schema()
         # Require admin via Bearer token, then upsert modules array
         token = get_bearer_token(self)
         user = get_user_by_token(token) if token else None
