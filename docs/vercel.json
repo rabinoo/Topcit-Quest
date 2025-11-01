@@ -10,9 +10,7 @@
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/", "destination": "/login.html" },
-    { "source": "/(.*)", "destination": "/$1" }
+    { "source": "/api/(.*)", "destination": "/api/$1" }
   ],
   "redirects": [
     { "source": "/", "destination": "/login.html", "statusCode": 308 }
