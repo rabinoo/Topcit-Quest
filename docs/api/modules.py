@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 
-from api._utils import db_connect, json_response, get_bearer_token, get_user_by_token
+from api._utils import db_connect, json_response, get_bearer_token, get_user_by_token, cors_preflight
 from api._schema import ensure_schema
 
 
@@ -89,3 +89,6 @@ class handler(BaseHTTPRequestHandler):
 
     def do_DELETE(self):
         return json_response(self, 405, { 'ok': False, 'error': 'Use GET or POST' })
+
+    def do_OPTIONS(self):
+        return cors_preflight(self)

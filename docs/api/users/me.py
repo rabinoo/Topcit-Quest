@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 
-from api._utils import json_response, get_bearer_token, get_user_by_token
+from api._utils import json_response, get_bearer_token, get_user_by_token, cors_preflight
 
 
 class handler(BaseHTTPRequestHandler):
@@ -15,3 +15,6 @@ class handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         return json_response(self, 405, { 'ok': False, 'error': 'Use GET' })
+
+    def do_OPTIONS(self):
+        return cors_preflight(self)

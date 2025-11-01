@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 
-from api._utils import db_connect, json_response, verify_password, issue_session_token
+from api._utils import db_connect, json_response, verify_password, issue_session_token, cors_preflight
 from api._schema import ensure_schema
 
 
@@ -64,3 +64,6 @@ class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         return json_response(self, 405, { 'ok': False, 'error': 'Use POST' })
+
+    def do_OPTIONS(self):
+        return cors_preflight(self)

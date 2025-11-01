@@ -3,7 +3,7 @@ import json
 import hashlib
 import uuid
 
-from api._utils import db_connect, json_response
+from api._utils import db_connect, json_response, cors_preflight
 from api._schema import ensure_schema
 
 try:
@@ -111,3 +111,6 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Method not allowed
         return json_response(self, 405, { 'ok': False, 'error': 'Use POST' })
+
+    def do_OPTIONS(self):
+        return cors_preflight(self)

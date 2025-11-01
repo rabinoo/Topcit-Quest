@@ -95,11 +95,33 @@ def send_email(to_addr: str, subject: str, text: str, html: Optional[str] = None
         return False
 
 
+def _set_cors(handler):
+    origin = handler.headers.get('Origin') or ''
+    allow = os.environ.get('CORS_ALLOW_ORIGINS')
+    if allow:
+        allowed = [o.strip() for o in allow.split(',') if o.strip()]
+        ao = origin if origin and origin in allowed else (allowed[0] if allowed else '*')
+    else:
+        ao = origin or '*'
+    handler.send_header('Access-Control-Allow-Origin', ao)
+    handler.send_header('Vary', 'Origin')
+    handler.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    handler.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, OPTIONS')
+    handler.send_header('Access-Control-Max-Age', '86400')
+
+
+def cors_preflight(handler):
+    handler.send_response(204)
+    _set_cors(handler)
+    handler.end_headers()
+
+
 def json_response(handler, status_code: int, payload: dict):
     data = json.dumps(payload).encode('utf-8')
     handler.send_response(status_code)
     handler.send_header('Content-Type', 'application/json')
     handler.send_header('Content-Length', str(len(data)))
+    _set_cors(handler)
     handler.end_headers()
     handler.wfile.write(data)
 

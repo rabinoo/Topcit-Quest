@@ -3,7 +3,7 @@ import json
 import secrets
 from urllib.parse import urlsplit
 
-from api._utils import db_connect, send_email, json_response
+from api._utils import db_connect, send_email, json_response, cors_preflight
 
 
 class handler(BaseHTTPRequestHandler):
@@ -69,3 +69,6 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Method not allowed
         return json_response(self, 405, { 'ok': False, 'error': 'Use POST' })
+
+    def do_OPTIONS(self):
+        return cors_preflight(self)

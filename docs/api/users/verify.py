@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
-from api._utils import db_connect, json_response
+from api._utils import db_connect, json_response, cors_preflight
 
 
 class handler(BaseHTTPRequestHandler):
@@ -40,3 +40,6 @@ class handler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Method not allowed
         return json_response(self, 405, { 'ok': False, 'error': 'Use POST' })
+
+    def do_OPTIONS(self):
+        return cors_preflight(self)
