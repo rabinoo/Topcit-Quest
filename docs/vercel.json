@@ -3,12 +3,6 @@
   "builds": [
     { "src": "api/**/*.py", "use": "@vercel/python" }
   ],
-  "functions": {
-    "api/**/*.py": {
-      "maxDuration": 10
-      
-    }
-  },
   "rewrites": [
     { "source": "/api/users/register", "destination": "/api/users-register" },
     { "source": "/api/users/login", "destination": "/api/users-login" },
