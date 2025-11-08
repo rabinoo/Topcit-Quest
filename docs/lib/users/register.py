@@ -3,8 +3,8 @@ import json
 import hashlib
 import uuid
 
-from lib._utils import db_connect, json_response, cors_preflight
-from lib._schema import ensure_schema
+from .._utils import db_connect, json_response, cors_preflight
+from .._schema import ensure_schema
 
 try:
     import bcrypt  # optional; fallback to sha256

@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 import json
 
-from lib._utils import json_response, get_bearer_token, get_user_by_token, db_connect, cors_preflight
+from .._utils import json_response, get_bearer_token, get_user_by_token, db_connect, cors_preflight
 
 
 class handler(BaseHTTPRequestHandler):

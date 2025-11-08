@@ -1,8 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 import json
 
-from lib._utils import db_connect, json_response, verify_password, issue_session_token, cors_preflight
-from lib._schema import ensure_schema
+from .._utils import db_connect, json_response, verify_password, issue_session_token, cors_preflight
+from .._schema import ensure_schema
 
 
 class handler(BaseHTTPRequestHandler):

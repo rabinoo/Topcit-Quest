@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 
-from lib._utils import json_response, get_bearer_token, get_user_by_token, cors_preflight
+from .._utils import json_response, get_bearer_token, get_user_by_token, cors_preflight
 
 
 class handler(BaseHTTPRequestHandler):

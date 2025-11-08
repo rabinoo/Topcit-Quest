@@ -1,7 +1,7 @@
 {
   "version": 2,
   "builds": [
-    { "src": "docs/api/**/*.py", "use": "@vercel/python" }
+    { "src": "api/**/*.py", "use": "@vercel/python" }
   ],
   "rewrites": [
     { "source": "/api/users/register", "destination": "/api/users?route=register" },

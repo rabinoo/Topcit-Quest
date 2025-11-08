@@ -3,7 +3,7 @@ import json
 import secrets
 from urllib.parse import urlsplit
 
-from lib._utils import db_connect, send_email, json_response, cors_preflight
+from .._utils import db_connect, send_email, json_response, cors_preflight
 
 
 class handler(BaseHTTPRequestHandler):
