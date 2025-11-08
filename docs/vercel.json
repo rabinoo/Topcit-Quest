@@ -10,7 +10,14 @@
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
+    { "source": "/api/users/register", "destination": "/api/users-register" },
+    { "source": "/api/users/login", "destination": "/api/users-login" },
+    { "source": "/api/users/verify/start", "destination": "/api/users-verify-start" },
+    { "source": "/api/users/verify", "destination": "/api/users-verify" },
+    { "source": "/api/users/me", "destination": "/api/users-me" },
+    { "source": "/api/users/progress", "destination": "/api/users-progress" },
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/docs/(.*)", "destination": "/$1" }
   ],
   "redirects": [
     { "source": "/", "destination": "/login.html", "statusCode": 308 }
