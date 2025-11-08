@@ -1,7 +1,7 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/**/*.py", "use": "@vercel/python" }
+    { "src": "docs/api/**/*.py", "use": "@vercel/python" }
   ],
   "rewrites": [
     { "source": "/api/users/register", "destination": "/api/users?route=register" },
@@ -11,10 +11,10 @@
     { "source": "/api/users/me", "destination": "/api/users?route=me" },
     { "source": "/api/users/progress", "destination": "/api/users?route=progress" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/docs/(.*)", "destination": "/$1" }
+    { "source": "/(.*)", "destination": "/docs/$1" }
   ],
   "redirects": [
-    { "source": "/", "destination": "/login.html", "statusCode": 308 }
+    { "source": "/", "destination": "/docs/login.html", "statusCode": 308 }
   ],
   "cleanUrls": true
 }
