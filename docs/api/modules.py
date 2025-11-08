@@ -1,8 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 import json
 
-from api._utils import db_connect, json_response, get_bearer_token, get_user_by_token, cors_preflight
-from api._schema import ensure_schema
+from lib._utils import db_connect, json_response, get_bearer_token, get_user_by_token, cors_preflight
+from lib._schema import ensure_schema
 
 
 def _fetch_modules():

@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
-from api._utils import db_connect, json_response, cors_preflight
+from lib._utils import db_connect, json_response, cors_preflight
 
 
 class handler(BaseHTTPRequestHandler):

@@ -1,1 +1,0 @@
-"""Serverless API package for Vercel deployment."""

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from api._utils import db_connect
+from lib._utils import db_connect
 
 
 DDL_USERS = """

@@ -1,1 +1,0 @@
-from api.users.me import handler
